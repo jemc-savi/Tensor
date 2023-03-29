@@ -1,0 +1,51 @@
+:class Tensor.Graph.Spec
+  :is Spec
+  :const describes: "Tensor.Graph"
+
+  :it "builds and runs a basic graph"
+    a_value = Tensor(F64).from_array([1, 2, 3, 4]).try_reshape([2, 2])
+    b_value = Tensor(F64).from_array([5, 6, 7, 8]).try_reshape([2, 2])
+
+    graph = Tensor.Graph.new
+    session = Tensor.Graph.Session.new(graph)
+    try (
+      a = graph.new_operation("Const", "a") -> (builder |
+        builder
+          .set_attr_type("dtype", Tensor(F64).element_type_code)
+          .set_attr_tensor!("value", a_value)
+          .finish!
+      )
+      b = graph.new_operation("Const", "b") -> (builder |
+        builder
+          .set_attr_type("dtype", Tensor(F64).element_type_code)
+          .set_attr_tensor!("value", b_value)
+          .finish!
+      )
+      product = graph.new_operation("MatMul", "example") -> (builder |
+        builder
+          .add_input(a.output(0))
+          .add_input(b.output(0))
+          .finish!
+      )
+
+      result = session.open!.hacky_temporary_run!(product)
+
+      assert: result.as!(Tensor(F64)).into_array == [
+        1.0 * 5.0 + 2.0 * 7.0, 1.0 * 6.0 + 2.0 * 8.0 // row1⋅col1, row1⋅col2
+        3.0 * 5.0 + 4.0 * 7.0, 3.0 * 6.0 + 4.0 * 8.0 // row2⋅col1, row2⋅col2
+      ]
+    |
+      graph.errors.each -> (error | @env.err.print(error.message))
+      session.errors.each -> (error | @env.err.print(error.message))
+      assert no_error: error!
+    )
+
+  :it "complains when creating an operation with an invalid type"
+    g = Tensor.Graph.new
+    assert error: (
+      g.new_operation("Bogus", "example") -> (builder |
+        builder.finish!
+      )
+    )
+    assert: g.errors.first!.code == Tensor.Graph.Error.Code.InvalidArgument
+    assert: g.errors.first!.message.includes("Op type not registered 'Bogus'")

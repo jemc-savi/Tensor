@@ -1,0 +1,114 @@
+:class Tensor.Graph.Session
+  :fun non _ffi: _FFI.Session
+  :fun non _ffi_options: _FFI.Session.Options
+  :var _ptr: CPointer(_FFI.Session).null
+  :var _status_ptr: CPointer(_FFI.Status).null
+  :let graph Tensor.Graph'box
+  :let errors Array(Tensor.Graph.Error): []
+
+  // TODO: finalizer to call TF_CloseSession and TF_DeleteSession if not null,
+  // and also destroy the status pointer as well
+
+  :new(@graph)
+    @_status_ptr = _FFI.Status.new
+
+  :: Check if there is currently an error code in `_status_ptr`, and if so,
+  :: store the error info in the `errors` list and raise a Savi error.
+  :fun ref _check_status! None
+    error_code = _FFI.Status.get_code(@_status_ptr)
+    return if error_code.is_none
+
+    error_message = _FFI.Status.get_message(@_status_ptr)
+    @errors << Tensor.Graph.Error.new(error_code, error_message)
+    error!
+
+  :fun ref open!
+    target = "local" // TODO: add mechanism for remote execution, respecting object capability security
+
+    options_ptr = @_ffi_options.new
+    // @_ffi_options.set_target(options_ptr, target.cstring)
+    // TODO: Add ability to set config, via a protobuf-serialized string.
+
+    @_ptr = @_ffi.new(@graph._ptr, options_ptr, @_status_ptr)
+    @_ffi_options.free(options_ptr)
+    @_check_status!
+
+    @
+
+  // TODO: close!
+
+  // TODO: Add a mechanism for partial runs (TF_SessionPRun and friends)
+
+  :fun ref hacky_temporary_run!(op Tensor.Graph.Operation) Tensor.Any
+    // TODO: accept inputs as parameters?
+    target_ops = [op] // TODO: accept target operation list as a param
+    outputs = [op.output(0)] // TODO: accept output list as a param
+
+    output_ffis = Array(_FFI.Output).new(outputs.size)
+    outputs.each -> (output | output_ffis << output._to_ffi)
+
+    output_tensor_ptrs = Array(CPointer(_FFI.Tensor)).new(outputs.size)
+    output_tensor_ptrs << CPointer(_FFI.Tensor).null
+
+    target_op_ptrs = Array(CPointer(_FFI.Operation)).new(target_ops.size)
+    target_ops.each -> (op | target_op_ptrs << op._ptr)
+
+    @_ffi.run(
+      @_ptr
+      CPointer(_FFI.Buffer).null
+
+      // Inputs
+      CPointer(_FFI.Input).null
+      CPointer(CPointer(_FFI.Tensor)).null
+      0
+
+      // Outputs
+      output_ffis.cpointer
+      output_tensor_ptrs.cpointer
+      outputs.size.i32
+
+      // Target Operations
+      target_op_ptrs.cpointer
+      target_op_ptrs.size.i32
+
+      CPointer(_FFI.Buffer).null
+      @_status_ptr
+    )
+    @_check_status!
+
+    // TODO: Return list of outputs?
+    _FFI.Tensor._adopt_ownership_of(output_tensor_ptrs[0]!)
+
+:module _FFI.Session.Options
+  :ffi new CPointer(@)
+    :foreign_name TF_NewSessionOptions
+
+  :ffi set_target(ptr CPointer(@), target_address_string CPointer(U8)) None
+    :foreign_name TF_SetTarget
+
+  :ffi free(ptr CPointer(@)) None
+    :foreign_name TF_DeleteSessionOptions
+
+:module _FFI.Session
+  :ffi new(
+    graph_ptr CPointer(_FFI.Graph)
+    options_ptr CPointer(_FFI.Session.Options)
+    status_ptr CPointer(_FFI.Status)
+  ) CPointer(@)
+    :foreign_name TF_NewSession
+
+  :ffi run(
+    ptr CPointer(@)
+    serialized_run_options CPointer(_FFI.Buffer)
+    inputs CPointer(_FFI.Input)
+    input_values CPointer(CPointer(_FFI.Tensor))
+    input_count I32
+    outputs CPointer(_FFI.Output)
+    output_values CPointer(CPointer(_FFI.Tensor))
+    output_count I32
+    target_ops CPointer(CPointer(_FFI.Operation))
+    target_op_count I32
+    serialized_run_metadata CPointer(_FFI.Buffer)
+    status_ptr CPointer(_FFI.Status)
+  ) None
+    :foreign_name TF_SessionRun

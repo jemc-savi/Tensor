@@ -1,0 +1,9 @@
+:class Tensor.Spec
+  :is Spec
+  :const describes: "Tensor"
+
+  :it "creates a 1-dimensional tensor from an array"
+    t = Tensor(I32).from_array([1, 2, 3, 4, 5])
+    assert: t.element_count == 5
+    assert: t.element_byte_width == I32.byte_width
+    assert: t.into_array == [1, 2, 3, 4, 5]

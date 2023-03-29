@@ -1,0 +1,13 @@
+:ffi_link_lib "tensorflow"
+
+:module _FFI
+  :ffi strlen(string CPointer(U8)) I32
+  :ffi memcpy(
+    destination CPointer(U8)
+    source CPointer(U8)
+    number_of_bytes_to_copy USize
+  ) CPointer(U8)
+
+:module _FFI.Cast(A, B)
+  :ffi pointer(input A) B
+    :foreign_name savi_cast_pointer

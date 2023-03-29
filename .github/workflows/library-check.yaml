@@ -25,9 +25,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, shell: bash }
-          - { os: macos-latest, shell: bash }
-          - { os: windows-latest, shell: 'wsl-bash {0}' }
+          - { os: ubuntu-latest, shell: bash, libtensorflow: libtensorflow-cpu-linux-x86_64-2.11.0.tar.gz }
+          - { os: macos-latest, shell: bash, libtensorflow: libtensorflow-cpu-darwin-x86_64-2.11.0.tar.gz }
+          # - { os: windows-latest, shell: 'wsl-bash {0}', libtensorflow: libtensorflow-cpu-windows-x86_64-2.11.0.zip }
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -35,6 +35,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: savi-lang/action-install@v1
+
+      # Obtain libtensorflow dependency.
+      - run: curl -v -L https://storage.googleapis.com/tensorflow/libtensorflow/${{ matrix.libtensorflow }} > /tmp/libtensorflow.archive
+      - run: sudo ${{ runner.os == 'Windows' && 'apt-get install unzip && sudo unzip /tmp/libtensorflow.archive -d "/mnt/c/Program Files (x86)/Windows Kits/10/Testing/Development/lib/x64"' || 'tar xzvf /tmp/libtensorflow.archive -C /usr/local' }}
+      - if: runner.os == 'Windows'
+        run: sudo mv "/mnt/c/Program Files (x86)/Windows Kits/10/Testing/Development/lib/x64/lib/tensorflow.lib" "/mnt/c/Program Files (x86)/Windows Kits/10/Testing/Development/lib/x64/"
+      - if: runner.os == 'Linux'
+        run: sudo scripts/linux-patch-libtensorflow.sh /usr/local/lib/libtensorflow.so
+      - if: runner.os == 'Linux'
+        run: sudo ldconfig /usr/local/lib
+
       - run: savi deps update --for spec
       - run: savi run spec ${{ runner.os == 'Windows' && '--cross-compile=x86_64-unknown-windows-msvc' || '' }}
 

@@ -1,0 +1,98 @@
+:class box Tensor.Graph.Operation
+  :fun non _ffi: _FFI.Graph
+  :let _ptr CPointer(_FFI.Operation)
+  :let graph Tensor.Graph
+
+  // No need for a finalizer - memory for this `_ptr` is owned by `graph._ptr`
+
+  // :fun input(index): Tensor.Graph.Input.new(@, index)
+  :fun output(index): Tensor.Graph.Output.new(@, index)
+
+  :new _new(@graph, @_ptr)
+
+:class Tensor.Graph.Operation.Builder
+  :fun non _ffi: _FFI.Operation.Builder
+  :var _ptr: CPointer(_FFI.Operation.Builder).null
+  :let graph Tensor.Graph
+
+  // No need for a finalizer - memory for this `_ptr` is owned by `graph._ptr`
+
+  // This constructor is private so that only Graph can initiate it,
+  // that yields the builder to the caller in a controlled way.
+  :new _new(@graph, op_type String, oper_name String)
+    @_ptr = @_ffi.new(@graph._ptr, op_type.cpointer, oper_name.cpointer)
+
+  :fun ref add_input(from_output Tensor.Graph.Output)
+    return @ if @_ptr.is_null
+    @_ffi.add_input(@_ptr, from_output._to_ffi)
+    @
+
+  :fun ref set_attr_type(attr_name String, type_code I32)
+    return @ if @_ptr.is_null
+    @_ffi.set_attr_type(
+      @_ptr
+      attr_name.cstring
+      type_code
+    )
+    @
+
+  :fun ref set_attr_tensor!(attr_name String, value Tensor.Any) // TODO: what is the right cap for Tensor?
+    return @ if @_ptr.is_null
+    @_ffi.set_attr_tensor(
+      @_ptr
+      attr_name.cstring
+      value._ptr
+      @graph._status_ptr
+    )
+    @graph._check_status!
+    @
+
+  :fun ref finish!
+    operation_ptr = @_ffi.finish(@_ptr, @graph._status_ptr)
+    @_ptr = @_ptr.null
+    @graph._check_status!
+    Tensor.Graph.Operation._new(@graph, operation_ptr)
+
+
+:module _FFI.Operation.Builder
+  :ffi new(
+    graph CPointer(_FFI.Graph)
+    op_type CPointer(U8)
+    oper_name CPointer(U8)
+  ) CPointer(@)
+    :foreign_name TF_NewOperation
+
+  :ffi finish(
+    ptr CPointer(@)
+    status_ptr CPointer(_FFI.Status)
+  ) CPointer(_FFI.Operation)
+    :foreign_name TF_FinishOperation
+
+  :ffi add_input(
+    ptr CPointer(@)
+    from_output _FFI.Output
+  ) None
+    :foreign_name TF_AddInput
+
+  // :ffi add_output(
+  //   ptr CPointer(@)
+  //   input _FFI.Output
+  // ) None
+  //   :foreign_name TF_AddOutput
+
+  :ffi set_attr_type(
+    ptr CPointer(@)
+    attr_name CPointer(U8)
+    value I32
+  ) None
+    :foreign_name TF_SetAttrType
+
+  :ffi set_attr_tensor(
+    ptr CPointer(@)
+    attr_name CPointer(U8)
+    value CPointer(_FFI.Tensor)
+    status_ptr CPointer(_FFI.Status)
+  ) None
+    :foreign_name TF_SetAttrTensor
+
+:module _FFI.Operation

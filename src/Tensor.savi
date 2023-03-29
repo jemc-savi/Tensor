@@ -1,0 +1,121 @@
+:trait Tensor.Any
+  :let _ptr CPointer(_FFI.Tensor)
+  :let _ptr_is_owned Bool
+
+:class Tensor(T Numeric(T)'val) // TODO: Exclude non-machine word implementers of the Numeric trait
+  :is Tensor.Any
+
+  :fun non _ffi: _FFI.Tensor
+  :let _ptr CPointer(_FFI.Tensor)
+  :let _ptr_is_owned Bool
+
+  :new _new(@_ptr, @_ptr_is_owned)
+
+  // TODO: Finalizer, taking `_ptr_is_owned` into account
+
+  // :new (dimensions Array(U64))
+  //   total_element_count USize = 1
+  //   dimensions.each -> (dimension_size |
+  //     total_element_count = total_element_count * dimension_size.usize
+  //   )
+  //   @_ptr_is_owned = True
+  //   @_ptr = _FFI.Tensor._allocate(
+  //     _FFI.DataType(T)._code
+  //     dimensions.cpointer
+  //     dimensions.size.i32
+  //     T.byte_width.usize * total_element_count
+  //   )
+
+  :new from_array(data Array(T)'box)
+    data_count_u64 = data.size.u64
+    total_byte_size = T.byte_width.usize * data.size
+
+    @_ptr_is_owned = True
+    @_ptr = @_ffi.allocate(
+      _FFI.DataType(T).code
+      stack_address_of_variable data_count_u64
+      1
+      total_byte_size
+    )
+
+    _FFI.memcpy(
+      _FFI.Tensor.data(@_ptr)
+      _FFI.Cast(CPointer(T), CPointer(U8)).pointer(data.cpointer)
+      total_byte_size
+    )
+
+  :fun ref try_reshape(dimensions): try (@reshape!(dimensions) | @)
+  :fun ref reshape!(dimensions Array(USize))
+    element_count USize = 1
+    dimensions.each -> (dimension_size |
+      element_count = element_count * dimension_size.usize
+    )
+    error! unless (element_count == @element_count)
+
+    dimensions_i64_ptr =
+      if (USize.byte_width == I64.byte_width) (
+        _FFI.Cast(CPointer(USize), CPointer(I64)).pointer(dimensions.cpointer)
+      |
+        dimensions_i64 Array(I64) = []
+        dimensions.each -> (size | dimensions_i64 << size.i64)
+        dimensions_i64.cpointer
+      )
+
+    @_ffi.set_shape(
+      @_ptr
+      dimensions_i64_ptr
+      dimensions.size.i32
+    )
+    @
+
+  :fun into_array(data Array(T) = [])
+    orig_size = data.size
+
+    size = @element_count.usize
+    data.reserve(orig_size + size)
+    while (data.size < size) (data << T.zero)
+    // TODO: make the above process more efficient - use the
+    // `resize_possibly_including_uninitialized_memory` method on `Bytes`
+    // for inspiration, but generalize to `Array`.
+
+    _FFI.memcpy(
+      _FFI.Cast(CPointer(T), CPointer(U8)).pointer(data.cpointer)
+      @_ffi.data(@_ptr)
+      T.byte_width.usize * size
+    )
+    data
+
+  :fun element_count: _FFI.Tensor.element_count(@_ptr).usize
+  :fun element_byte_width: T.byte_width
+  :fun non element_type_code I32: _FFI.DataType(T).code // TODO: avoid I32 here?
+
+:module _FFI.Tensor
+  :fun non _adopt_ownership_of(ptr CPointer(@)) Tensor.Any
+    _FFI.DataType.Util._tensor_with_type(@type(ptr), ptr, True)
+
+  :ffi allocate(
+    data_type I32
+    dimension_list CPointer(U64)
+    dimension_count I32
+    len USize
+  ) CPointer(@)
+    :foreign_name TF_AllocateTensor
+
+  :ffi free(ptr CPointer(@)) None
+    :foreign_name TF_DeleteTensor
+
+  :ffi type(tensor CPointer(@)) I32
+    :foreign_name TF_TensorType
+
+  :ffi data(tensor CPointer(@)) CPointer(U8)
+    :foreign_name TF_TensorData
+
+  :ffi element_count(tensor CPointer(@)) U64
+    :foreign_name TF_TensorElementCount
+
+  :ffi set_shape(
+    tensor CPointer(@)
+    dimension_list CPointer(I64)
+    dimension_count I32
+  ) None
+    :foreign_name TF_SetShape

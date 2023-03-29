@@ -1,0 +1,12 @@
+:struct Tensor.Graph.Output
+  :let operation Tensor.Graph.Operation
+  :let index USize
+  :new (@operation, @index)
+
+  :fun _to_ffi
+    _FFI.Output._new(@operation._ptr, @index.i32)
+
+:struct _FFI.Output
+  :let operation_ptr CPointer(_FFI.Operation)
+  :let index I32
+  :new _new(@operation_ptr, @index)
