@@ -1,0 +1,97 @@
+:class Tensor.Op.Logical.Spec
+  :is Spec
+  :const describes: "Tensor.Op.Logical"
+
+  :it "computes boolean 'NOT' operations"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.logical_not!("example"
+          g.const!("input", Tensor(Bool).from_array([True, False]))
+        )
+      )
+
+      assert: result.as!(Tensor(Bool)).into_array == [False, True]
+    ))
+
+  :it "can't do logical 'NOT' operations on non-booleans"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.logical_not!("example"
+        g.const!("input", Tensor(F64).from_array([1, 2, 3, 4]))
+      )
+    )
+
+  :it "computes boolean 'AND' operations"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.logical_and!("example"
+          g.const!("x", Tensor(Bool).from_array([True, True, False, False]))
+          g.const!("y", Tensor(Bool).from_array([True, False, True, False]))
+        )
+      )
+
+      assert: result.as!(Tensor(Bool)).into_array == [True, False, False, False]
+    ))
+
+  :it "can't do logical 'AND' operations on non-booleans"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.logical_and!("example"
+        g.const!("x", Tensor(F64).from_array([1, 2, 3, 4]))
+        g.const!("y", Tensor(F64).from_array([5, 6, 7, 8]))
+      )
+    )
+
+  :it "can't do logical 'AND' operations with operands of different sizes"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.logical_and!("example"
+        g.const!("x", Tensor(Bool).from_array([True, True, False, False]))
+        g.const!("y", Tensor(Bool).from_array([True, False, True]))
+      )
+    )
+
+  :it "can't do logical 'AND' operations with operands of different shapes"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.logical_and!("example"
+        g.const!("x", Tensor(Bool).from_array([True, True, False, False]))
+        g.const!("y", Tensor(Bool).from_array([True, False, True, False])
+            .try_reshape([2, 2])
+        )
+      )
+    )
+
+  :it "computes boolean 'OR' operations"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.logical_or!("example"
+          g.const!("x", Tensor(Bool).from_array([True, True, False, False]))
+          g.const!("y", Tensor(Bool).from_array([True, False, True, False]))
+        )
+      )
+
+      assert: result.as!(Tensor(Bool)).into_array == [True, True, True, False]
+    ))
+
+  :it "can't do logical 'OR' operations on non-booleans"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.logical_or!("example"
+        g.const!("x", Tensor(F64).from_array([1, 2, 3, 4]))
+        g.const!("y", Tensor(F64).from_array([5, 6, 7, 8]))
+      )
+    )
+
+  :it "can't do logical 'OR' operations with operands of different sizes"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.logical_or!("example"
+        g.const!("x", Tensor(Bool).from_array([True, True, False, False]))
+        g.const!("y", Tensor(Bool).from_array([True, False, True]))
+      )
+    )
+
+  :it "can't do logical 'OR' operations with operands of different shapes"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.logical_or!("example"
+        g.const!("x", Tensor(Bool).from_array([True, True, False, False]))
+        g.const!("y", Tensor(Bool).from_array([True, False, True, False])
+            .try_reshape([2, 2])
+        )
+      )
+    )
