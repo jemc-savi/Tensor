@@ -1,0 +1,90 @@
+:class Tensor.Op.MatMul.Spec
+  :is Spec
+  :const describes: "Tensor.Op.MatMul"
+
+  :fun non f64_2x2(a, b, c, d)
+    Tensor(F64).from_array([a, b, c, d]).try_reshape([2, 2])
+
+  :it "computes matrix multiplication"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.matmul!("example"
+          g.const!("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
+          g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        )
+      )
+
+      assert: result.as!(Tensor(F64)).into_array == [
+        1.0 * 5.0 + 2.0 * 7.0, 1.0 * 6.0 + 2.0 * 8.0 // Arow1⋅Bcol1, Arow1⋅Bcol2
+        3.0 * 5.0 + 4.0 * 7.0, 3.0 * 6.0 + 4.0 * 8.0 // Arow2⋅Bcol1, Arow2⋅Bcol2
+      ]
+    ))
+
+  :it "computes matrix multiplication with the first matrix transposed"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.matmul_with_a_transposed!("example"
+          g.const!("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
+          g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        )
+      )
+
+      assert: result.as!(Tensor(F64)).into_array == [
+        1.0 * 5.0 + 3.0 * 7.0, 1.0 * 6.0 + 3.0 * 8.0 // Acol1⋅Bcol1, Acol1⋅Bcol2
+        2.0 * 5.0 + 4.0 * 7.0, 2.0 * 6.0 + 4.0 * 8.0 // Acol2⋅Bcol1, Acol2⋅Bcol2
+      ]
+    ))
+
+  :it "computes matrix multiplication with the second matrix transposed"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.matmul_with_b_transposed!("example"
+          g.const!("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
+          g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        )
+      )
+
+      assert: result.as!(Tensor(F64)).into_array == [
+        1.0 * 5.0 + 2.0 * 6.0, 1.0 * 7.0 + 2.0 * 8.0 // Arow1⋅Brow1, Arow1⋅Brow2
+        3.0 * 5.0 + 4.0 * 6.0, 3.0 * 7.0 + 4.0 * 8.0 // Arow2⋅Brow1, Arow2⋅Brow2
+      ]
+    ))
+
+  :it "computes matrix multiplication with both matrices transposed"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.matmul_with_both_transposed!("example"
+          g.const!("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
+          g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        )
+      )
+
+      assert: result.as!(Tensor(F64)).into_array == [
+        1.0 * 5.0 + 3.0 * 6.0, 1.0 * 7.0 + 3.0 * 8.0 // Acol1⋅Brow1, Acol1⋅Brow2
+        2.0 * 5.0 + 4.0 * 6.0, 2.0 * 7.0 + 4.0 * 8.0 // Acol2⋅Brow1, Acol2⋅Brow2
+      ]
+    ))
+
+  :it "complains when one of the inputs is a scalar (rank 0 tensor)"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.matmul!("example"
+        g.const!("A", Tensor(F64).scalar(99))
+        g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+      )
+    )
+
+  :it "complains when one of the inputs is a vector (rank 1 tensor)"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.matmul!("example"
+        g.const!("A", Tensor(F64).from_array([1, 2, 3, 4]))
+        g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+      )
+    )
+
+  :it "complains when one of the inputs has a rank higher 2"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.matmul!("example"
+        g.const!("A", @f64_2x2(1.0, 2.0, 3.0, 4.0).try_reshape([2, 1, 2]))
+        g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+      )
+    )

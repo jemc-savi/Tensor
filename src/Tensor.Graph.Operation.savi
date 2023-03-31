@@ -22,9 +22,18 @@
   :new _new(@graph, op_type String, oper_name String)
     @_ptr = @_ffi.new(@graph._ptr, op_type.cpointer, oper_name.cpointer)
 
-  :fun ref add_input(from_output Tensor.Graph.Output)
+  :fun ref add_input(can_output Tensor.Graph.CanOutput)
     return @ if @_ptr.is_null
-    @_ffi.add_input(@_ptr, from_output._to_ffi)
+    @_ffi.add_input(@_ptr, can_output.output._to_ffi)
+    @
+
+  :fun ref set_attr_bool(attr_name String, value Bool)
+    return @ if @_ptr.is_null
+    @_ffi.set_attr_bool(
+      @_ptr
+      attr_name.cstring
+      value.u8
+    )
     @
 
   :fun ref set_attr_type(attr_name String, type_code I32)
@@ -79,6 +88,13 @@
   //   input _FFI.Output
   // ) None
   //   :foreign_name TF_AddOutput
+
+  :ffi set_attr_bool(
+    ptr CPointer(@)
+    attr_name CPointer(U8)
+    value U8
+  ) None
+    :foreign_name TF_SetAttrBool
 
   :ffi set_attr_type(
     ptr CPointer(@)

@@ -23,6 +23,8 @@
     error!
 
   :fun ref open!
+    return if @_ptr.is_not_null
+
     target = "local" // TODO: add mechanism for remote execution, respecting object capability security
 
     options_ptr = @_ffi_options.new
@@ -39,19 +41,56 @@
 
   // TODO: Add a mechanism for partial runs (TF_SessionPRun and friends)
 
-  :fun ref hacky_temporary_run!(op Tensor.Graph.Operation) Tensor.Any
-    // TODO: accept inputs as parameters?
-    target_ops = [op] // TODO: accept target operation list as a param
-    outputs = [op.output(0)] // TODO: accept output list as a param
+  :fun ref compute!(
+    can_output Tensor.Graph.CanOutput
+  ) Tensor.Any
+    @open!
 
+    // TODO: accept input list as a parameter
+    output = can_output.output
+    output_ffi = output._to_ffi
+    target_op_ptr = output.op._ptr
+    output_tensor_ptr = CPointer(_FFI.Tensor).null
+
+    @_ffi.run(
+      @_ptr
+      CPointer(_FFI.Buffer).null
+
+      // Inputs
+      CPointer(_FFI.Input).null
+      CPointer(CPointer(_FFI.Tensor)).null
+      0
+
+      // Outputs
+      stack_address_of_variable output_ffi
+      stack_address_of_variable output_tensor_ptr
+      1
+
+      // Target Operations
+      stack_address_of_variable target_op_ptr
+      1
+
+      CPointer(_FFI.Buffer).null
+      @_status_ptr
+    )
+    @_check_status!
+
+    _FFI.Tensor._adopt_ownership_of(output_tensor_ptr)
+
+  :fun ref compute_many!(
+    outputs Array(Tensor.Graph.Output)'box // TODO: use CanOutput instead of just Output
+  )
+    @open!
+
+    // TODO: accept input list as a parameter
     output_ffis = Array(_FFI.Output).new(outputs.size)
-    outputs.each -> (output | output_ffis << output._to_ffi)
-
     output_tensor_ptrs = Array(CPointer(_FFI.Tensor)).new(outputs.size)
-    output_tensor_ptrs << CPointer(_FFI.Tensor).null
-
-    target_op_ptrs = Array(CPointer(_FFI.Operation)).new(target_ops.size)
-    target_ops.each -> (op | target_op_ptrs << op._ptr)
+    target_op_ptrs = Array(CPointer(_FFI.Operation)).new(outputs.size)
+    outputs.each -> (output |
+      output_ffis << output._to_ffi
+      output_tensor_ptrs << CPointer(_FFI.Tensor).null
+      target_op_ptrs << output.op._ptr
+    )
 
     @_ffi.run(
       @_ptr
@@ -76,8 +115,15 @@
     )
     @_check_status!
 
-    // TODO: Return list of outputs?
-    _FFI.Tensor._adopt_ownership_of(output_tensor_ptrs[0]!)
+    results = Map(Tensor.Graph.Output, Tensor.Any).new(outputs.size)
+    outputs.each_with_index -> (output, index |
+      try (
+        results[output] = _FFI.Tensor._adopt_ownership_of(
+          output_tensor_ptrs[index]!
+        )
+      )
+    )
+    results
 
 :module _FFI.Session.Options
   :ffi new CPointer(@)

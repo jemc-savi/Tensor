@@ -1,6 +1,7 @@
 :trait Tensor.Any
   :let _ptr CPointer(_FFI.Tensor)
   :let _ptr_is_owned Bool
+  :fun element_type_code I32
 
 :class Tensor(T Numeric(T)'val) // TODO: Exclude non-machine word implementers of the Numeric trait
   :is Tensor.Any
@@ -25,6 +26,23 @@
   //     dimensions.size.i32
   //     T.byte_width.usize * total_element_count
   //   )
+
+  :new scalar(value T)
+    @_ptr_is_owned = True
+    @_ptr = @_ffi.allocate(
+      _FFI.DataType(T).code
+      CPointer(U64).null
+      0
+      T.byte_width.usize
+    )
+
+    _FFI.memcpy(
+      _FFI.Tensor.data(@_ptr)
+      _FFI.Cast(CPointer(T), CPointer(U8)).pointer(
+        stack_address_of_variable value
+      )
+      T.byte_width.usize
+    )
 
   :new from_array(data Array(T)'box)
     data_count_u64 = data.size.u64

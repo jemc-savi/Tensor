@@ -1,0 +1,15 @@
+:: Produces a constant `Tensor` value (a fixed value in the `Tensor.Graph`,
+:: which doesn't come from an input value supplied to the graph at runtime).
+::
+:: If you want to supply a value at runtime, use `Tensor.Op.Placeholder`.
+:struct box Tensor.Op.Const
+  :is Tensor.Op
+  :fun non new!(graph Tensor.Graph, name
+    value
+  )
+    @_new(graph.new_operation("Const", name) -> (builder |
+      builder
+        .set_attr_tensor!("value", value)
+        .set_attr_type("dtype", value.element_type_code)
+        .finish!
+    ))
