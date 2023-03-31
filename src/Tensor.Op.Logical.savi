@@ -1,0 +1,31 @@
+:: Computes the logical "NOT" operation in boolean logic.
+:: The input must be a boolean tensor. The output values will be the opposite.
+:struct box Tensor.Op.Logical.Not
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name, input)
+    @_new(graph.new_operation("LogicalNot", name) -> (builder |
+      builder.add_input(input).finish!
+    ))
+
+:: Computes the logical "AND" operation in boolean logic.
+:: The two inputs must be boolean tensors with the same number of elements.
+:: An output value will be true if one or both the corresponding input is true.
+:struct box Tensor.Op.Logical.And
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name, x, y)
+    @_new(graph.new_operation("LogicalAnd", name) -> (builder |
+      builder.add_input(x).add_input(y).finish!
+    ))
+
+:: Computes the logical "OR" operation in boolean logic.
+:: The two inputs must be boolean tensors with the same number of elements.
+:: An output value will be true only if both the corresponding inputs are true.
+:struct box Tensor.Op.Logical.Or
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name, x, y)
+    @_new(graph.new_operation("LogicalOr", name) -> (builder |
+      builder.add_input(x).add_input(y).finish!
+    ))

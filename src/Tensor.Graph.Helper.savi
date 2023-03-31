@@ -13,13 +13,25 @@
     Tensor.Op.Const.new!(@graph, name, value)
 
   ///
-  // Unary Operations
+  // Logical Operations
+
+  :fun ref logical_not!(name, input)
+    Tensor.Op.Logical.Not.new!(@graph, name, input)
+
+  :fun ref logical_and!(name, x, y)
+    Tensor.Op.Logical.And.new!(@graph, name, x, y)
+
+  :fun ref logical_or!(name, x, y)
+    Tensor.Op.Logical.Or.new!(@graph, name, x, y)
+
+  ///
+  // Other Unary Operations
 
   :fun ref softmax!(name, input)
     Tensor.Op.Softmax.new!(@graph, name, input)
 
   ///
-  // Binary Operations
+  // Other Binary Operations
 
   :fun ref matmul!(name, a, b)
     Tensor.Op.MatMul.new!(@graph, name, a, b, False, False)
