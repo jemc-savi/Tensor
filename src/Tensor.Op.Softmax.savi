@@ -38,8 +38,8 @@
 :: as they move about, seeking the hidden goal. In other words, they get
 :: information about their "derivative" in a kind of gradient descent algorithm.
 :: How much harder would it be for the seeker to find their goal if they were
-:: only told "yes" or "no" at each step with no information whether they are
-:: nearing their goal or receding from it! If the goal were an infinitesimal
+:: only told "yes" or "no" at each step with no information about whether they
+:: are nearing their goal or receding from it! If the goal were an infinitesimal
 :: point in space, they would neither reach it nor have any decidable way
 :: of approaching it without this information.
 ::
