@@ -1,0 +1,60 @@
+:class Tensor.Op.Softmax.Spec
+  :is Spec
+  :const describes: "Tensor.Op.Softmax"
+
+  :it "computes the softmax function of a vector (tensor rank 1)"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.softmax!("example"
+          g.const!("input", Tensor(F64).from_array([1, 2, 3, 4, 5]))
+        )
+      )
+
+      assert: result.as!(Tensor(F64)).into_array == [
+        0.01165623095603961
+        0.031684920796124276
+        0.08612854443626873
+        0.23412165725273662
+        0.6364086465588309
+      ]
+    ))
+
+  :it "complains when applied to a scalar (rank 0 tensor)"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: (
+        g.softmax!("example"
+          g.const!("input", Tensor(F64).scalar(99))
+        )
+      )
+    )
+
+  :it "when applied to a higher rank, computes each inner row separately"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.softmax!("example"
+          g.const!("input"
+            Tensor(F64).from_array([
+              1, 2, 3
+              1, 2, 0 // with implicit bias, this is equivalent to 2, 3, 1
+
+              4, 5, 6 // with implicit bias, this is equivalent to 1, 2, 3
+              4, 5, 0 // but here the pattern changes, as 0 is far from 4 & 5
+
+              7, 8, 9 // and this is also equivalent to 1, 2, 3
+              7, 8, 0 // and this 0 is even father from 7 & 8
+            ]).try_reshape([3, 2, 3])
+          )
+        )
+      )
+
+      assert: result.as!(Tensor(F64)).into_array == [
+        0.09003057317038046, 0.2447284710547976, 0.6652409557748219
+        0.24472847105479759, 0.6652409557748218, 0.09003057317038045
+
+        0.09003057317038046, 0.2447284710547976, 0.6652409557748219
+        0.2676231541498623,  0.7274751568004648, 0.004901689049672922
+
+        0.09003057317038046, 0.2447284710547976, 0.6652409557748219
+        0.26887548158545244, 0.7308793357119101, 0.00024518270263755956
+      ]
+    ))

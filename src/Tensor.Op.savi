@@ -1,0 +1,6 @@
+:trait box Tensor.Op
+  :let op Tensor.Graph.Operation
+  :new box _new(@op)
+
+  :is Tensor.Graph.CanOutput
+  :fun output: @op.output(0)

@@ -1,0 +1,62 @@
+:: Computes matrix multiplication on the two input matrices (`A` and `B`).
+::
+:: Because matrices are expected, the two input tensors must be of rank 2,
+:: else an error will be raised indicating the invalid arguments.
+::
+:: A matrix can be thought of as a linear transformation function (that is,
+:: a function that can take vector values and transform them in a linear way).
+:: See <https://mathinsight.org/matrices_linear_transformations>
+::
+:: Under this thinking, matrix multiplication can be thought of as the
+:: composition of two given linear transformation functions such that we
+:: produce a new linear transformation function which can transform its inputs
+:: in the same way that they would be transformed if the two original
+:: linear transformation functions were applied, one after the other.
+::
+:: Note that matrix multiplication is *not* commutative like the multiplication
+:: of scalar values is. Rather, the order of terms matters: `AB` != `BA`.
+:: If you think of them as linear transformations, this corresponds to the
+:: fact that you'll get different results based on the order in which you
+:: apply the individual transformations.
+::
+:: In computer graphics, games, and other simulations, matrix multiplication
+:: is often used to "stack" coordinate transformations on top of one another,
+:: with the resulting matrix being a transformation you can apply as a single
+:: operation that effectively applies the whole stack of transformation.
+:: If you're familiar with such systems, you know that the order of applying
+:: transformations matters there as well, and for the same reasons.
+::
+:: In machine learning, matrix multiplication is also used to "stack" or "chain"
+:: transformations in a model. Often, one of the transformations being stacked
+:: is a "learned" transformation (its matrix cell values being model weights).
+::
+:: This component of model architecture effectively gives the model a way
+:: to learn an appropriate (linear) transformation function that will
+:: play a role in transforming the input data into some desirable output data.
+::
+:: However, note that directly stacking multiple learned linear transformations
+:: is not productive, and is a waste of model weights and computational power.
+:: Recall that any two matrices (linear transformations) can be composed via
+:: matrix multiplication into a single equivalent linear transformation.
+:: Therefore, no additional learnable behaviors can be introduced by composing
+:: two directly-stacked layers of learnable linear transformations - all the
+:: same behaviors can emerge with just one learnable linear transformation.
+:: To make the stacking productive of new emergent behaviors, you need to
+:: include some nonlinear transformation in between the learned linear ones.
+:struct box Tensor.Op.MatMul
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name
+    a
+    b
+    transpose_a Bool = False
+    transpose_b Bool = False
+  )
+    @_new(graph.new_operation("MatMul", name) -> (builder |
+      builder
+        .add_input(a)
+        .add_input(b)
+        .set_attr_bool("transpose_a", transpose_a)
+        .set_attr_bool("transpose_b", transpose_b)
+        .finish!
+    ))

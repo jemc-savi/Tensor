@@ -1,0 +1,34 @@
+:struct Tensor.Graph.Helper
+  :let graph Tensor.Graph
+  :new (@graph)
+  :copies Tensor.Graph.Helper.Methods
+
+:trait Tensor.Graph.Helper.Methods
+  :fun graph @->(Tensor.Graph)
+
+  ///
+  // Value Sources
+
+  :fun ref const!(name, value)
+    Tensor.Op.Const.new!(@graph, name, value)
+
+  ///
+  // Unary Operations
+
+  :fun ref softmax!(name, input)
+    Tensor.Op.Softmax.new!(@graph, name, input)
+
+  ///
+  // Binary Operations
+
+  :fun ref matmul!(name, a, b)
+    Tensor.Op.MatMul.new!(@graph, name, a, b, False, False)
+
+  :fun ref matmul_with_a_transposed!(name, a, b)
+    Tensor.Op.MatMul.new!(@graph, name, a, b, True, False)
+
+  :fun ref matmul_with_b_transposed!(name, a, b)
+    Tensor.Op.MatMul.new!(@graph, name, a, b, False, True)
+
+  :fun ref matmul_with_both_transposed!(name, a, b)
+    Tensor.Op.MatMul.new!(@graph, name, a, b, True, True)

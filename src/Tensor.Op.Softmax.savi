@@ -1,0 +1,61 @@
+:: The softmax function takes a set of input values and scales them nonlinearly
+:: to produce a set of output values that have the following useful properties:
+::
+:: - They are normalized (they are all are between zero and one).
+:: - When they are all added together the sum is one.
+:: - The highest input values correspond to the highest output values.
+:: - The distance between the highest value and the second-highest value
+::   is magnified in the output, making the highest value "stand out" more.
+::
+:: The first two properties make the output look like a probability distribution
+:: with the sum of all probabilities adding up to one (i.e. a 100% chance).
+::
+:: The third property makes sure the distribution has an intuitive relationship
+:: to the input values - a reasonable way of converting to probabilities.
+::
+:: The fourth property indicates a nonlinearity in the transformation,
+:: and it comes from the fact that this function is defined in terms
+:: of exponential growth (this is what "accentuates" the highest value).
+:: See <https://deepai.org/machine-learning-glossary-and-terms/softmax-layer>
+::
+:: So why do we call it a "softmax" function? Well, that's because it's a
+:: little bit like as if we had simply selected the maximum value and set
+:: every other output value to zero - that would be a "hard maximum" function.
+:: But what we're doing is softer than that! No matter how far any given input
+:: value is below the maximum, it's never assigned an output value of zero -
+:: it always gets at least a little slice of the overall pie.
+::
+:: So why do we prefer a "soft" max over a "hard" max in machine learning?
+:: Well, chiefly because: in order for the model to learn, we need to be able
+:: to calculate a gradient descent for it, which means all the operations that
+:: compose it need to be differentiable (we need to be able to calculate a
+:: meaningful derivative). And a "hard" max function is really a piecewise
+:: function that thus has undifferentiable cliffs at the piecewise boundaries.
+::
+:: To get an intuition for this, picture the "hotter or colder" game that
+:: children often play, in which at every step the seeker is told how "hot" or
+:: "cold" they currently are, and whether they are "getting hotter" or "colder"
+:: as they move about, seeking the hidden goal. In other words, they get
+:: information about their "derivative" in a kind of gradient descent algorithm.
+:: How much harder would it be for the seeker to find their goal if they were
+:: only told "yes" or "no" at each step with no information whether they are
+:: nearing their goal or receding from it! If the goal were an infinitesimal
+:: point in space, they would neither reach it nor have any decidable way
+:: of approaching it without this information.
+::
+:: This is why we use a "soft" max instead of a "hard" max for learning:
+:: no matter how near or far you are from the goal in the problem space,
+:: you always learn something about how to approach it (a vector in that space).
+:: While the system that produces the input values for the softmax function
+:: is being adjusted via the learning process, it can see meaningful results.
+:struct box Tensor.Op.Softmax
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name
+    logits
+  )
+    @_new(graph.new_operation("Softmax", name) -> (builder |
+      builder
+        .add_input(logits)
+        .finish!
+    ))

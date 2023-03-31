@@ -1,12 +1,12 @@
-:struct Tensor.Graph.Input
-  :let operation Tensor.Graph.Operation
+:struct box Tensor.Graph.Input
+  :let op Tensor.Graph.Operation
   :let index USize
-  :new (@operation, @index)
+  :new box (@op, @index)
 
   :fun _to_ffi
-    _FFI.Input._new(@operation._ptr, @index.i32)
+    _FFI.Input._new(@op._ptr, @index.i32)
 
 :struct _FFI.Input
-  :let operation_ptr CPointer(_FFI.Operation)
-  :let index I32
-  :new _new(@operation_ptr, @index)
+  :let _op_ptr CPointer(_FFI.Operation)
+  :let _index I32
+  :new _new(@_op_ptr, @_index)

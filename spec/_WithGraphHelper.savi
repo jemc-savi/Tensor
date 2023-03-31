@@ -1,0 +1,16 @@
+:struct _WithGraphHelper
+  :let graph: Tensor.Graph.new
+  :let session: Tensor.Graph.Session.new(@graph)
+  :copies Tensor.Graph.Helper.Methods
+
+  :fun non run(env Env, print_errors = True)
+    graph = Tensor.Graph.new
+    g = Tensor.Graph.Helper.new(graph)
+    session = Tensor.Graph.Session.new(graph)
+
+    yield (g, session)
+
+    if print_errors (
+      graph.errors.each -> (error | env.err.print(error.message))
+      session.errors.each -> (error | env.err.print(error.message))
+    )
