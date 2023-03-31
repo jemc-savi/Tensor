@@ -1,0 +1,38 @@
+:class Tensor.Graph
+  :fun non _ffi: _FFI.Graph
+  :let _ptr CPointer(_FFI.Graph)
+  :let _status_ptr CPointer(_FFI.Status)
+  :let errors Array(Tensor.Graph.Error): []
+
+  // TODO: Add finalizer to call TF_DeleteGraph and TF_DeleteStatus when done.
+
+  :new
+    @_ptr = @_ffi.new
+    @_status_ptr = _FFI.Status.new
+
+  :: Check if there is currently an error code in `_status_ptr`, and if so,
+  :: store the error info in the `errors` list and raise a Savi error.
+  :fun ref _check_status! None
+    error_code = _FFI.Status.get_code(@_status_ptr)
+    return if error_code.is_none
+
+    error_message = _FFI.Status.get_message(@_status_ptr)
+    @errors << Tensor.Graph.Error.new(error_code, error_message)
+    error!
+
+  :fun ref new_operation(
+    op_type String
+    oper_name String
+  ) Tensor.Graph.Operation
+    // Yielding the builder instead of returning it lets us guarantee that
+    // the caller will call `finish!` on the builder, which is critical
+    // for preserving memory safety of the C API we are wrapping.
+    :yields Tensor.Graph.Operation.Builder for Tensor.Graph.Operation
+
+    builder = Tensor.Graph.Operation.Builder._new(@, op_type, oper_name)
+    yield builder
+
+
+:module _FFI.Graph
+  :ffi new CPointer(@)
+    :foreign_name TF_NewGraph

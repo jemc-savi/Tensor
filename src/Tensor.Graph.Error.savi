@@ -1,0 +1,47 @@
+:struct Tensor.Graph.Error
+  :let code Tensor.Graph.Error.Code
+  :let message String
+  :new (@code, @message)
+
+:enum Tensor.Graph.Error.Code
+  :bit_width 32
+
+  // These must keep up with the codes defined in `tensorflow/c/c_api.h`.
+  :member None                0
+  :member Cancelled           1
+  :member Unknown             2
+  :member InvalidArgument     3
+  :member DeadlineExceeded    4
+  :member NotFound            5
+  :member AlreadyExists       6
+  :member PermissionDenied    7
+  :member Unauthenticated     16
+  :member ResourceExhausted   8
+  :member FailedPrecondition  9
+  :member Aborted             10
+  :member OutOfRange          11
+  :member Unimplemented       12
+  :member Internal            13
+  :member Unavailable         14
+  :member DataLoss            15
+
+  :fun is_none: @ == Tensor.Graph.Error.Code.None
+
+:module _FFI.Status
+  :ffi new CPointer(@)
+    :foreign_name TF_NewStatus
+
+  :ffi free(ptr CPointer(@)) None
+    :foreign_name TF_DeleteStatus
+
+  :ffi get_code(ptr CPointer(@)) Tensor.Graph.Error.Code
+    :foreign_name TF_GetCode
+
+  :ffi _get_message(ptr CPointer(@)) CPointer(U8)'ref
+    :foreign_name TF_Message
+
+  :fun get_message(ptr) String
+    tmp_ptr = @_get_message(ptr)
+    tmp_ptr_len = _FFI.strlen(tmp_ptr).usize
+    tmp_string = String.from_cpointer(tmp_ptr, tmp_ptr_len, tmp_ptr_len + 1)
+    tmp_string.clone // (copy into Savi buffer from the buffer we are borrowing)
