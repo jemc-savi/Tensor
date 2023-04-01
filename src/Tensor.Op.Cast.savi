@@ -1,0 +1,35 @@
+:: Convert each of the given input values to their most closely corresponding
+:: value (possibly rounding or bounds-wrapping) in the given output data type.
+::
+:: This is not a bit cast (reinterpreting the same bits as being a new type) -
+:: it is a conversion meant to try and preserve a similar semantic value,
+:: even if that value has a very different bitwise representation.
+::
+:: For a bit-preserving conversion, use `Tensor.Op.Bitcast` instead.
+::
+:: If converting from floating-point from integer, it always rounds toward zero
+:: (instead of rounding to the strictly nearest integer).
+::
+:: If converting from floating-point to a less precise floating-point type,
+:: it rounds to the nearest representable value, with ties going to evens,
+:: unless the `truncate` parameter is set to `True`, in which case it will
+:: round toward zero (known as truncation).
+::
+:: If converting from an integer type to a narrower integer type, it wraps
+:: the value across the bounds of the narrower type, as in integer overflow.
+::
+:struct box Tensor.Op.Cast
+  :is Tensor.Op
+  :fun non new!(graph Tensor.Graph, name
+    input
+    output_type Tensor.Any'non
+    truncate = False
+  )
+    @_new(graph.new_operation("Cast", name) -> (builder |
+      builder
+        .add_input(input)
+        // TODO: SrcT?
+        .set_attr_type("DstT", output_type.element_type_code)
+        .set_attr_bool("Truncate", truncate)
+        .finish!
+    ))

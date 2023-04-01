@@ -1,7 +1,7 @@
 :trait Tensor.Any
   :let _ptr CPointer(_FFI.Tensor)
   :let _ptr_is_owned Bool
-  :fun element_type_code I32
+  :fun non element_type_code I32: -1
 
 :class Tensor(T Numeric(T)'val) // TODO: Exclude non-machine word implementers of the Numeric trait
   :is Tensor.Any
