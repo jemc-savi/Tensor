@@ -1,0 +1,31 @@
+:: Based on a condition tensor (boolean), select each corresponding output value
+:: from either the first input value tensor (if true) or the second (if false).
+::
+:: The two value input tensors must be of the same data type.
+::
+:: All three input tensors (including the condition tensor) must either be
+:: of the same size/shape or of some other broadcast-compatible sizes/shapes.
+::
+:: A shape is broadcast-compatible with another shape if its corresponding
+:: dimensions (starting with the inner most) are each equivalent, or 1,
+:: Extra outermost dimensions of size 1 can implicitly be treated as existing
+:: if that helps with aligning with the dimensions of the other shape(s).
+:: When a dimension of size 1 is aligned with a dimension of larger size,
+:: the value of the size-1 dimension will be "broadcast" across all positions
+:: of the wide dimension, such that its value will correspond to many values.
+::
+:struct box Tensor.Op.Select
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name
+    condition_tensor
+    true_case_tensor
+    false_case_tensor
+  )
+    @_new(graph.new_operation("SelectV2", name) -> (builder |
+      builder
+        .add_input(condition_tensor)
+        .add_input(true_case_tensor)
+        .add_input(false_case_tensor)
+        .finish!
+    ))
