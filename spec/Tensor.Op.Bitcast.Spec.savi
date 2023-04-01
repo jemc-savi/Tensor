@@ -1,0 +1,40 @@
+:class Tensor.Op.Bitcast.Spec
+  :is Spec
+  :const describes: "Tensor.Op.Bitcast"
+
+  :it "distributes bits into a larger number of narrower elements"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.bitcast!("example"
+          g.const!("input", Tensor(U16).from_array([0x0246, 0x8ace]))
+          Tensor(U8)
+        )
+      )
+
+      assert: result.as!(Tensor(U8)).into_array == [0x46, 0x02, 0xce, 0x8a]
+      assert: result.as!(Tensor(U8)).into_array == [0x46, 0x02, 0xce, 0x8a]
+    ))
+
+  :it "consolidates bits into a smaller number of wider elements"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.bitcast!("example"
+          g.const!("input", Tensor(U8).from_array([0x46, 0x02, 0xce, 0x8a])
+              .try_reshape([2, 2])
+          )
+          Tensor(U16)
+        )
+      )
+
+      assert: result.as!(Tensor(U16)).into_array == [0x0246, 0x8ace]
+    ))
+
+  :it "complains on narrow to wide with more than one wide result per row"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.bitcast!("example"
+        g.const!("input", Tensor(U8).from_array([0x46, 0x02, 0xce, 0x8a])
+          // this would work if we did a reshape like: .try_reshape([2, 2])
+        )
+        Tensor(U16)
+      )
+    )
