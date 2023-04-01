@@ -1,0 +1,51 @@
+:class Tensor.Op.Greater.Spec
+  :is Spec
+  :const describes: "Tensor.Op.Greater"
+
+  :it "checks if the 1st operand's values are greater than those of the 2nd"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.greater!("example"
+          g.const!("x", Tensor(I32).from_array([1, 2, 3]))
+          g.const!("y", Tensor(I32).from_array([3, 2, 1]))
+        )
+      )
+
+      assert: result.as!(Tensor(Bool)).into_array == [False, False, True]
+    ))
+
+  :it "may optionally include equal values as being true"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.greater_or_equal!("example"
+          g.const!("x", Tensor(I32).from_array([1, 2, 3]))
+          g.const!("y", Tensor(I32).from_array([3, 2, 1]))
+        )
+      )
+
+      assert: result.as!(Tensor(Bool)).into_array == [False, True, True]
+    ))
+
+  :it "complains if the operands are of different types"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.greater!("example"
+        g.const!("x", Tensor(I32).from_array([1, 2, 3]))
+        g.const!("y", Tensor(I8).from_array([3, 2, 1]))
+      )
+    )
+
+  :it "complains if the operands are of different sizes"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.greater!("example"
+        g.const!("x", Tensor(I32).from_array([1, 2, 3]))
+        g.const!("y", Tensor(I32).from_array([3, 2, 1, 0]))
+      )
+    )
+
+  :it "complains if the operands are of different shapes"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.greater!("example"
+        g.const!("x", Tensor(I32).from_array([0, 1, 2, 3]))
+        g.const!("y", Tensor(I32).from_array([3, 2, 1, 0]).try_reshape([2, 2]))
+      )
+    )

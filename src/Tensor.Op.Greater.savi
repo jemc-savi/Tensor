@@ -1,0 +1,15 @@
+:: Compares input values from the two operands to check if x is greater than y.
+::
+:: The two inputs must be numeric tensors of the same type, size, and shape.
+:: The output is a boolean tensor indicating the result of each comparison.
+::
+:: If the `or_equal` parameter is set to true, equal values in the operands
+:: will also cause the corresponding output value to be `True`.
+:struct box Tensor.Op.Greater
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name, x, y, or_equal = False)
+    op_name = if or_equal ("GreaterEqual" | "Greater")
+    @_new(graph.new_operation(op_name, name) -> (builder |
+      builder.add_input(x).add_input(y).finish!
+    ))

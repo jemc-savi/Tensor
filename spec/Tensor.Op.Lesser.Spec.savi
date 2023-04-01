@@ -1,0 +1,51 @@
+:class Tensor.Op.Lesser.Spec
+  :is Spec
+  :const describes: "Tensor.Op.Lesser"
+
+  :it "checks if the 1st operand's values are lesser than those of the 2nd"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.lesser!("example"
+          g.const!("x", Tensor(I32).from_array([1, 2, 3]))
+          g.const!("y", Tensor(I32).from_array([3, 2, 1]))
+        )
+      )
+
+      assert: result.as!(Tensor(Bool)).into_array == [True, False, False]
+    ))
+
+  :it "may optionally include equal values as being true"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.lesser_or_equal!("example"
+          g.const!("x", Tensor(I32).from_array([1, 2, 3]))
+          g.const!("y", Tensor(I32).from_array([3, 2, 1]))
+        )
+      )
+
+      assert: result.as!(Tensor(Bool)).into_array == [True, True, False]
+    ))
+
+  :it "complains if the operands are of different types"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.lesser!("example"
+        g.const!("x", Tensor(I32).from_array([1, 2, 3]))
+        g.const!("y", Tensor(I8).from_array([3, 2, 1]))
+      )
+    )
+
+  :it "complains if the operands are of different sizes"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.lesser!("example"
+        g.const!("x", Tensor(I32).from_array([1, 2, 3]))
+        g.const!("y", Tensor(I32).from_array([3, 2, 1, 0]))
+      )
+    )
+
+  :it "complains if the operands are of different shapes"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.lesser!("example"
+        g.const!("x", Tensor(I32).from_array([0, 1, 2, 3]))
+        g.const!("y", Tensor(I32).from_array([3, 2, 1, 0]).try_reshape([2, 2]))
+      )
+    )
