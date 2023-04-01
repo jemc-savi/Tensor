@@ -25,6 +25,21 @@
     Tensor.Op.Logical.Or.new!(@graph, name, x, y)
 
   ///
+  // Comparative Operations
+
+  :fun ref greater!(name, x, y)
+    Tensor.Op.Greater.new!(@graph, name, x, y, False)
+
+  :fun ref greater_or_equal!(name, x, y)
+    Tensor.Op.Greater.new!(@graph, name, x, y, True)
+
+  :fun ref lesser!(name, x, y)
+    Tensor.Op.Lesser.new!(@graph, name, x, y, False)
+
+  :fun ref lesser_or_equal!(name, x, y)
+    Tensor.Op.Lesser.new!(@graph, name, x, y, True)
+
+  ///
   // Type Conversions
 
   :fun ref bitcast!(name, input, output_type)
