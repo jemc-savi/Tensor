@@ -71,3 +71,9 @@
 
   :fun ref matmul_with_both_transposed!(name, a, b)
     Tensor.Op.MatMul.new!(@graph, name, a, b, True, True)
+
+  ///
+  // Other Ternary Operations
+
+  :fun ref select!(name, condition, true_case, false_case)
+    Tensor.Op.Select.new!(@graph, name, condition, true_case, false_case)
