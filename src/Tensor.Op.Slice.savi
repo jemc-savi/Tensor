@@ -1,0 +1,21 @@
+:: Create a new output tensor from a contiguous slice of the given input tensor.
+::
+:: Data will be taken from all dimensions of the input tensor, beginning at
+:: the indices indicated by the `begin_indices` operand, and continuing up
+:: through contiguous elements for the sizes indicated by the `output_shape`
+:: operand. Both of these operands must therefore be vectors (rank-1 tensors)
+:: with the same number of elements as the total dimension count of the input.
+:struct box Tensor.Op.Slice
+  :is Tensor.Op
+  :fun non new!(graph Tensor.Graph, name
+    input
+    begin_indices
+    output_shape
+  )
+    @_new(graph.new_operation("Slice", name) -> (builder |
+      builder
+        .add_input(input)
+        .add_input(begin_indices)
+        .add_input(output_shape)
+        .finish!
+    ))

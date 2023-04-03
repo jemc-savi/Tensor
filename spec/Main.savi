@@ -13,5 +13,6 @@
       Spec.Run(Tensor.Op.Pack.Spec).new(env)
       Spec.Run(Tensor.Op.Reshape.Spec).new(env)
       Spec.Run(Tensor.Op.Select.Spec).new(env)
+      Spec.Run(Tensor.Op.Slice.Spec).new(env)
       Spec.Run(Tensor.Op.Softmax.Spec).new(env)
     ])
