@@ -66,7 +66,22 @@
   :fun ref pack!(name, inputs, axis USize = 0)
     Tensor.Op.Pack.new!(@graph, name, inputs, axis)
 
-  :fun ref slice!(name, input, begin_indices, output_shape)
+  :fun ref slice!(
+    name
+    input
+    begin_indices Array(USize)
+    output_shape Array(USize)
+  )
+    @slice_dynamic!(name, input
+      @const!("\(name).begin_indices"
+        Tensor(I64).generate(begin_indices.size) -> (i | begin_indices[i]!.i64!)
+      )
+      @const!("\(name).output_shape"
+        Tensor(I64).generate(output_shape.size) -> (i | output_shape[i]!.i64!)
+      )
+    )
+
+  :fun ref slice_dynamic!(name, input, begin_indices, output_shape)
     Tensor.Op.Slice.new!(@graph, name, input, begin_indices, output_shape)
 
   ///
