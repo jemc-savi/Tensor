@@ -51,9 +51,6 @@
   :fun ref cast_with_floating_point_truncation!(name, input, output_type)
     Tensor.Op.Cast.new!(@graph, name, input, output_type, True)
 
-  :fun ref pack!(name, inputs, axis USize = 0)
-    Tensor.Op.Pack.new!(@graph, name, inputs, axis)
-
   :fun ref reshape!(name, input, output_shape Array(USize))
     Tensor.Op.Reshape.new!(@graph, name, input
       @const!("\(name).new_shape"
@@ -62,6 +59,15 @@
         )
       )
     )
+
+  ///
+  // Fan-out/Fan-in Operations
+
+  :fun ref pack!(name, inputs, axis USize = 0)
+    Tensor.Op.Pack.new!(@graph, name, inputs, axis)
+
+  :fun ref slice!(name, input, begin_indices, output_shape)
+    Tensor.Op.Slice.new!(@graph, name, input, begin_indices, output_shape)
 
   ///
   // Other Unary Operations

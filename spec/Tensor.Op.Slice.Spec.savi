@@ -1,0 +1,70 @@
+:class Tensor.Op.Slice.Spec
+  :is Spec
+  :const describes: "Tensor.Op.Slice"
+
+  :it "slices a contiguous portion of the input tensor"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.slice!("example"
+          g.const!("input"
+            Tensor(F64).from_array([
+              10, 11, 12, 13, 14
+              15, 16, 17, 18, 19
+              20, 21, 22, 23, 24
+              25, 26, 27, 28, 29
+
+              30, 31, 32, 33, 34
+              35, 36, 37, 38, 39
+              40, 41, 42, 43, 44
+              45, 46, 47, 48, 49
+
+              50, 51, 52, 53, 54
+              55, 56, 57, 58, 59
+              60, 61, 62, 63, 64
+              65, 66, 67, 68, 69
+            ]).try_reshape([3, 4, 5])
+          )
+          g.const!("begin_indices", Tensor(I32).from_array([1, 2, 1]))
+          g.const!("output_shape",  Tensor(I32).from_array([2, 2, 3]))
+        )
+      )
+
+      assert: result.shape_into_array == [2, 2, 3]
+      assert: result.as!(Tensor(F64)).into_array == [
+        41, 42, 43
+        46, 47, 48
+
+        61, 62, 63
+        66, 67, 68
+      ]
+    ))
+
+  :it "complains on session comput if the output shape is out of bounds"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: session.compute!(
+        g.slice!("example"
+          g.const!("input"
+            Tensor(F64).from_array([
+              10, 11, 12, 13, 14
+              15, 16, 17, 18, 19
+              20, 21, 22, 23, 24
+              25, 26, 27, 28, 29
+
+              30, 31, 32, 33, 34
+              35, 36, 37, 38, 39
+              40, 41, 42, 43, 44
+              45, 46, 47, 48, 49
+
+              50, 51, 52, 53, 54
+              55, 56, 57, 58, 59
+              60, 61, 62, 63, 64
+              65, 66, 67, 68, 69
+            ]).try_reshape([3, 4, 5])
+          )
+          g.const!("begin_indices", Tensor(I32).from_array([1, 2, 1]))
+          g.const!("output_shape",  Tensor(I32).from_array([3, 2, 3]))
+          // (since we started at index 1 in the first dimension,
+          // an output shape with size 3 in that dimension is out of bounds)
+        )
+      )
+    )
