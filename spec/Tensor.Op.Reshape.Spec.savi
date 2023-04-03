@@ -1,0 +1,24 @@
+:class Tensor.Op.Reshape.Spec
+  :is Spec
+  :const describes: "Tensor.Op.Reshape"
+
+  :it "emits a variation on the tensor which has a changed shape"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.reshape!("example"
+          g.const!("input", Tensor(F64).from_array([1, 2, 3, 4, 5, 6]))
+          [2, 3]
+        )
+      )
+
+      assert: result.as!(Tensor(F64)).into_array == [1, 2, 3, 4, 5, 6]
+      assert: result.shape_into_array == [2, 3]
+    ))
+
+  :it "complains when the requested shape doesn't align with the current size"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.reshape!("example"
+        g.const!("input", Tensor(F64).from_array([1, 2, 3, 4, 5, 6, 7, 8]))
+        [2, 3]
+      )
+    )

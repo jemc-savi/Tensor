@@ -40,7 +40,7 @@
     Tensor.Op.Lesser.new!(@graph, name, x, y, True)
 
   ///
-  // Type Conversions
+  // Type/Shape Conversions
 
   :fun ref bitcast!(name, input, output_type)
     Tensor.Op.Bitcast.new!(@graph, name, input, output_type)
@@ -50,6 +50,15 @@
 
   :fun ref cast_with_floating_point_truncation!(name, input, output_type)
     Tensor.Op.Cast.new!(@graph, name, input, output_type, True)
+
+  :fun ref reshape!(name, input, output_shape Array(USize))
+    Tensor.Op.Reshape.new!(@graph, name, input
+      @const!("\(name).new_shape"
+        Tensor(I64).generate(output_shape.size) -> (index |
+          output_shape[index]!.i64!
+        )
+      )
+    )
 
   ///
   // Other Unary Operations
