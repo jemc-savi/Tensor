@@ -1,0 +1,20 @@
+:: Create a new output tensor of made of the list of given input tensors.
+:: All inputs in the list must have the same type and the same shape.
+:: The new tensor will have an added dimension (i.e. be one rank higher).
+::
+:: If an `axis` is not specified, `0` is the default axis, meaning that the
+:: new tensor will have its outermost dimension be the new dimension.
+:: If an `axis` is specified, the new dimension will be at the given index of
+:: the new shape. Raises an error if `axis` is greater than the inputs' rank.
+:struct box Tensor.Op.Pack
+  :is Tensor.Op
+  :fun non new!(graph Tensor.Graph, name
+    inputs Array(Tensor.Graph.CanOutput)'box
+    axis USize = 0
+  )
+    @_new(graph.new_operation("Pack", name) -> (builder |
+      builder
+        .add_input_list(inputs)
+        .set_attr_i64("axis", axis.i64!)
+        .finish!
+    ))
