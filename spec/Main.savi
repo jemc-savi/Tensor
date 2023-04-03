@@ -10,6 +10,7 @@
       Spec.Run(Tensor.Op.Lesser.Spec).new(env)
       Spec.Run(Tensor.Op.Logical.Spec).new(env)
       Spec.Run(Tensor.Op.MatMul.Spec).new(env)
+      Spec.Run(Tensor.Op.Reshape.Spec).new(env)
       Spec.Run(Tensor.Op.Select.Spec).new(env)
       Spec.Run(Tensor.Op.Softmax.Spec).new(env)
     ])

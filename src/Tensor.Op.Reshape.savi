@@ -1,0 +1,17 @@
+:: Create a new output tensor of a different shape using the elements copied
+:: from the input tensor. The second input tensor indicates the new shape.
+::
+:: It is similar to the `Tensor.reshape` method, but it is used for runtime
+:: values inside the graph rather than tensors held locally (not in a graph).
+:struct box Tensor.Op.Reshape
+  :is Tensor.Op
+  :fun non new!(graph Tensor.Graph, name
+    input
+    output_shape Tensor.Graph.CanOutput
+  )
+    @_new(graph.new_operation("Reshape", name) -> (builder |
+      builder
+        .add_input(input)
+        .add_input(output_shape)
+        .finish!
+    ))
