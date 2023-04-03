@@ -27,12 +27,28 @@
     @_ffi.add_input(@_ptr, can_output.output._to_ffi)
     @
 
+  :fun ref add_input_list(can_outputs Array(Tensor.Graph.CanOutput)'box)
+    return @ if @_ptr.is_null
+    outputs = Array(_FFI.Output).new(can_outputs.size)
+    can_outputs.each -> (can_output | outputs << can_output.output._to_ffi)
+    @_ffi.add_input_list(@_ptr, outputs.cpointer, outputs.size.i32)
+    @
+
   :fun ref set_attr_bool(attr_name String, value Bool)
     return @ if @_ptr.is_null
     @_ffi.set_attr_bool(
       @_ptr
       attr_name.cstring
       value.u8
+    )
+    @
+
+  :fun ref set_attr_i64(attr_name String, value I64)
+    return @ if @_ptr.is_null
+    @_ffi.set_attr_i64(
+      @_ptr
+      attr_name.cstring
+      value
     )
     @
 
@@ -83,6 +99,13 @@
   ) None
     :foreign_name TF_AddInput
 
+  :ffi add_input_list(
+    ptr CPointer(@)
+    from_outputs CPointer(_FFI.Output)
+    from_outputs_count I32
+  ) None
+    :foreign_name TF_AddInputList
+
   // :ffi add_output(
   //   ptr CPointer(@)
   //   input _FFI.Output
@@ -95,6 +118,13 @@
     value U8
   ) None
     :foreign_name TF_SetAttrBool
+
+  :ffi set_attr_i64(
+    ptr CPointer(@)
+    attr_name CPointer(U8)
+    value I64
+  ) None
+    :foreign_name TF_SetAttrInt
 
   :ffi set_attr_type(
     ptr CPointer(@)

@@ -1,0 +1,80 @@
+:class Tensor.Op.Pack.Spec
+  :is Spec
+  :const describes: "Tensor.Op.Pack"
+
+  :fun non f64_2x2(a, b, c, d)
+    Tensor(F64).from_array([a, b, c, d]).try_reshape([2, 2])
+
+  :it "combines the list of tensors into one new tensor"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.pack!("example"
+          [
+            g.const!("input_a", @f64_2x2(1, 2, 3, 4))
+            g.const!("input_b", @f64_2x2(5, 6, 7, 8))
+          ]
+        )
+      )
+
+      assert: result.shape_into_array == [2, 2, 2]
+      assert: result.as!(Tensor(F64)).into_array == [
+        1, 2
+        3, 4
+
+        5, 6
+        7, 8
+      ]
+    ))
+
+  :it "can combine along a different axis"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.pack!("example"
+          [
+            g.const!("input_a", @f64_2x2(1, 2, 3, 4))
+            g.const!("input_b", @f64_2x2(5, 6, 7, 8))
+          ]
+          1 // axis
+        )
+      )
+
+      assert: result.shape_into_array == [2, 2, 2]
+      assert: result.as!(Tensor(F64)).into_array == [
+        1, 2
+        5, 6
+
+        3, 4
+        7, 8
+      ]
+    ))
+
+  :it "complains when the inputs are of different types"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.pack!("example"
+        [
+          g.const!("input_a", Tensor(F64).from_array([1, 2, 3, 4]))
+          g.const!("input_b", Tensor(F32).from_array([5, 6, 7, 8]))
+        ]
+      )
+    )
+
+  :it "complains when the inputs are of different shapes"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.pack!("example"
+        [
+          g.const!("input_a", @f64_2x2(1, 2, 3, 4))
+          g.const!("input_b", @f64_2x2(5, 6, 7, 8).try_reshape([1, 4]))
+        ]
+      )
+    )
+
+  :it "complains when the requested axis is greater than the inputs' rank"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: g.pack!("example"
+        [
+          g.const!("input_a", @f64_2x2(1, 2, 3, 4))
+          g.const!("input_b", @f64_2x2(5, 6, 7, 8))
+        ]
+        3 // axis
+      )
+    )
