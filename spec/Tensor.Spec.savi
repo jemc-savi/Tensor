@@ -2,8 +2,14 @@
   :is Spec
   :const describes: "Tensor"
 
-  :it "creates a 1-dimensional tensor from an array"
+  :it "creates a 1-dimensional tensor (i.e. a vector) from an array"
     t = Tensor(I32).from_array([1, 2, 3, 4, 5])
     assert: t.element_count == 5
     assert: t.element_byte_width == I32.byte_width
     assert: t.into_array == [1, 2, 3, 4, 5]
+
+  :it "creates a 0-dimensional tensor (i.e. a scalar) from a single value"
+    t = Tensor(I32).scalar(99)
+    assert: t.element_count == 1
+    assert: t.element_byte_width == I32.byte_width
+    assert: t.into_array == [99]

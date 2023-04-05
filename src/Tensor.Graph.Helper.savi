@@ -13,6 +13,67 @@
     Tensor.Op.Const.new!(@graph, name, value)
 
   ///
+  // Pseudo-Random Sources
+
+  :fun ref gen_random!(name
+    seed
+    algorithm Tensor.Gen.Random.Algorithm = Tensor.Gen.Random.Algorithm.Philox
+  )
+    Tensor.Gen.Random.new!(@graph, name, seed, algorithm)
+
+  :fun ref random_uniform!(name
+    gen_random Tensor.Gen.Random
+    output_type
+    output_shape Array(USize)
+  )
+    output_shape_tensor = Tensor(I64).generate(output_shape.size) -> (i |
+      output_shape[i]!.i64!
+    )
+    Tensor.Op.Random.Uniform.new!(@graph, name
+      gen_random.algorithm
+      gen_random.key
+      gen_random.use_counter!(output_shape_tensor.element_count.u64)
+      output_type
+      @const!("\(name).output_shape", output_shape_tensor)
+    )
+
+  :fun ref random_uniform_integers!(name
+    gen_random Tensor.Gen.Random
+    output_type
+    output_shape Array(USize)
+  )
+    output_shape_tensor = Tensor(I64).generate(output_shape.size) -> (i |
+      output_shape[i]!.i64!
+    )
+    Tensor.Op.Random.Uniform.Integers.new!(@graph, name
+      gen_random.algorithm
+      gen_random.key
+      gen_random.use_counter!(output_shape_tensor.element_count.u64)
+      output_type
+      @const!("\(name).output_shape", output_shape_tensor)
+    )
+
+  :fun ref random_uniform_bounded_integers!(name
+    gen_random Tensor.Gen.Random
+    output_type
+    output_shape Array(USize)
+    min_val Tensor.Any
+    max_val Tensor.Any
+  )
+    output_shape_tensor = Tensor(I64).generate(output_shape.size) -> (i |
+      output_shape[i]!.i64!
+    )
+    Tensor.Op.Random.Uniform.BoundedIntegers.new!(@graph, name
+      gen_random.algorithm
+      gen_random.key
+      gen_random.use_counter!(output_shape_tensor.element_count.u64)
+      output_type
+      @const!("\(name).output_shape", output_shape_tensor)
+      @const!("\(name).min", min_val)
+      @const!("\(name).max", max_val)
+    )
+
+  ///
   // Logical Operations
 
   :fun ref logical_not!(name, input)
@@ -23,6 +84,12 @@
 
   :fun ref logical_or!(name, x, y)
     Tensor.Op.Logical.Or.new!(@graph, name, x, y)
+
+  ///
+  // Arithmetic Operations
+
+  :fun ref add!(name, x, y)
+    Tensor.Op.Add.new!(@graph, name, x, y)
 
   ///
   // Comparative Operations

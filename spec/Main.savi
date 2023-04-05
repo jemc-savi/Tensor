@@ -3,6 +3,11 @@
     Spec.Process.run(env, [
       Spec.Run(Tensor.Spec).new(env)
       Spec.Run(Tensor.Graph.Spec).new(env)
+
+      ///
+      // Tensor.Op specs
+
+      Spec.Run(Tensor.Op.Add.Spec).new(env)
       Spec.Run(Tensor.Op.Bitcast.Spec).new(env)
       Spec.Run(Tensor.Op.Cast.Spec).new(env)
       Spec.Run(Tensor.Op.Const.Spec).new(env)
@@ -11,8 +16,14 @@
       Spec.Run(Tensor.Op.Logical.Spec).new(env)
       Spec.Run(Tensor.Op.MatMul.Spec).new(env)
       Spec.Run(Tensor.Op.Pack.Spec).new(env)
+      Spec.Run(Tensor.Op.Random.Spec).new(env)
       Spec.Run(Tensor.Op.Reshape.Spec).new(env)
       Spec.Run(Tensor.Op.Select.Spec).new(env)
       Spec.Run(Tensor.Op.Slice.Spec).new(env)
       Spec.Run(Tensor.Op.Softmax.Spec).new(env)
+
+      ///
+      // Tensor.Gen specs
+
+      Spec.Run(Tensor.Gen.Random.Spec).new(env)
     ])

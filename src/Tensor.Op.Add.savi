@@ -1,0 +1,23 @@
+:: Add each of the values in one input tensor to the corresponding values in
+:: another input tensor to produce an output tensor of sum values.
+::
+:: Both input tensors must have the same shape or broadcast-compatible shapes.
+::
+:: A shape is broadcast-compatible with another shape if its corresponding
+:: dimensions (starting with the inner most) are each equivalent, or 1,
+:: Extra outermost dimensions of size 1 can implicitly be treated as existing
+:: if that helps with aligning with the dimensions of the other shape(s).
+:: When a dimension of size 1 is aligned with a dimension of larger size,
+:: the value of the size-1 dimension will be "broadcast" across all positions
+:: of the wide dimension, such that its value will correspond to many values.
+:: See <https://numpy.org/doc/stable/user/basics.broadcasting.html>
+:struct box Tensor.Op.Add
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name, x, y)
+    @_new(graph.new_operation("AddV2", name) -> (builder |
+      builder
+        .add_input(x)
+        .add_input(y)
+        .finish!
+    ))
