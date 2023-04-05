@@ -1,0 +1,29 @@
+:class Tensor.Gen.Random.Spec
+  :is Spec
+  :const describes: "Tensor.Gen.Random"
+
+  :it "raises its internal counter with each graph node that uses it"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      random = g.gen_random!("random"
+        g.const!("seed", Tensor(U32).from_array([2, 3]))
+      )
+      example1 = g.random_uniform!("example1", random, Tensor(F64), [])
+      example2 = g.random_uniform!("example2", random, Tensor(F64), [])
+      example3 = g.random_uniform!("example3", random, Tensor(F64), [])
+      example4 = g.random_uniform!("example4", random, Tensor(F64), [])
+      example5 = g.random_uniform!("example5", random, Tensor(F64), [])
+
+      assert: [
+        session.compute!(example1).as!(Tensor(F64)).into_array.first!
+        session.compute!(example2).as!(Tensor(F64)).into_array.first!
+        session.compute!(example3).as!(Tensor(F64)).into_array.first!
+        session.compute!(example4).as!(Tensor(F64)).into_array.first!
+        session.compute!(example5).as!(Tensor(F64)).into_array.first!
+      ] == [
+        0.398508191067887150
+        0.765757677912869900
+        0.624153601512746500
+        0.913356627721398900
+        0.007108289495397546
+      ]
+    ))

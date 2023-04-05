@@ -1,0 +1,87 @@
+:class Tensor.Op.Random.Spec
+  :is Spec
+  :const describes: "Tensor.Op.Random"
+
+  :fun random!(g Tensor.Graph.Helper.Methods)
+    g.gen_random!("random"
+      g.const!("seed", Tensor(U32).from_array([2, 3]))
+    )
+
+  :it "generates random floating-point values between zero and one"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.random_uniform!("example", @random!(g), Tensor(F64), [5, 3])
+      )
+
+      assert: result.shape_into_array == [5, 3]
+      assert: result.as!(Tensor(F64)).into_array == [
+        0.398508191067887150, 0.732788935422899800, 0.772497775924872600
+        0.011093940016129400, 0.397627388101850600, 0.920265260249592700
+        0.078954885901334040, 0.794863860646023000, 0.738741301280144700
+        0.033675519199442006, 0.109785841235917390, 0.434643886432106300
+        0.315942563326273130, 0.829186890989337000, 0.945693221173083500
+      ]
+    ))
+
+  :it "generates random integer values"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.random_uniform_integers!("example", @random!(g), Tensor(U32), [5, 3])
+      )
+
+      assert: result.shape_into_array == [5, 3]
+      assert: result.as!(Tensor(U32)).into_array == [
+        4078329930,  536687091,  396081536
+        3825742130, 2525781030, 2696759281
+        2342530416, 3604535639, 2584108206
+        2302558966, 3643717992,  281455550
+        697385830,   852288488, 1222424515
+      ]
+    ))
+
+  :it "generates random integer values within a given bounds"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.random_uniform_bounded_integers!("example", @random!(g)
+          Tensor(I32)
+          [5, 12]
+          Tensor(I32).scalar(0)
+          Tensor(I32).scalar(10)
+        )
+      )
+
+      assert: result.shape_into_array == [5, 12]
+      assert: result.as!(Tensor(I32)).into_array == [
+        0, 1, 6, 0, 0, 1, 6, 9, 6, 6, 2, 0
+        0, 8, 5, 3, 0, 9, 5, 9, 6, 6, 7, 6
+        5, 9, 7, 8, 7, 7, 9, 8, 7, 9, 5, 3
+        4, 1, 5, 7, 6, 0, 7, 7, 0, 3, 8, 8
+        3, 2, 2, 8, 0, 5, 2, 6, 3, 8, 3, 1
+      ]
+    ))
+
+  :it "can't generate uniform floating-point values with an integer type"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: (
+        g.random_uniform!("example", @random!(g), Tensor(I32), [5, 3])
+      )
+    )
+
+  :it "can't generate uniform integer values with a floating-point type"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: (
+        g.random_uniform_integers!("example", @random!(g), Tensor(F64), [5, 3])
+      )
+    )
+
+  :it "can't generate uniform bounded integer values with a floating-point type"
+    _WithGraphHelper.run(@env, False) -> (g, session |
+      assert error: (
+        g.random_uniform_bounded_integers!("example", @random!(g)
+          Tensor(F64)
+          [5, 3]
+          Tensor(F64).scalar(0)
+          Tensor(F64).scalar(10)
+        )
+      )
+    )

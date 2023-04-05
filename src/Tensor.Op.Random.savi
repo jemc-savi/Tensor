@@ -1,0 +1,87 @@
+:: Generate pseudo-random floating-point numbers in a uniform distribution,
+:: with values ranging from zero to one.
+::
+:: The given `algorithm` will be used to generate values, using the given
+:: `key` and `counter` values as the state for deterministic generation.
+:: A `Tensor.Gen.Random` instance should typically supply these values.
+:struct box Tensor.Op.Random.Uniform
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name
+    algorithm Tensor.Gen.Random.Algorithm
+    key
+    counter
+    output_type Tensor.Any'non
+    output_shape
+  )
+    @_new(graph.new_operation("StatelessRandomUniformV2", name) -> (builder |
+      builder
+        .add_input(output_shape)
+        .add_input(key)
+        .add_input(counter)
+        .add_input(Tensor.Op.Const.new!(graph, "\(name).algorithm"
+          Tensor(I32).scalar(algorithm.i32)
+        ))
+        .set_attr_type("dtype", output_type.element_type_code)
+        .finish!
+    ))
+
+:: Generate pseudo-random integers in a uniform distribution, with values
+:: across the entire range of values representable by the given integer type.
+::
+:: The given `algorithm` will be used to generate values, using the given
+:: `key` and `counter` values as the state for deterministic generation.
+:: A `Tensor.Gen.Random` instance should typically supply these values.
+:struct box Tensor.Op.Random.Uniform.Integers
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name
+    algorithm Tensor.Gen.Random.Algorithm
+    key
+    counter
+    output_type Tensor.Any'non
+    output_shape
+  )
+    @_new(graph.new_operation("StatelessRandomUniformFullIntV2", name) -> (builder |
+      builder
+        .add_input(output_shape)
+        .add_input(key)
+        .add_input(counter)
+        .add_input(Tensor.Op.Const.new!(graph, "\(name).algorithm"
+          Tensor(I32).scalar(algorithm.i32)
+        ))
+        .set_attr_type("dtype", output_type.element_type_code)
+        .finish!
+    ))
+
+:: Generate pseudo-random integers in a uniform distribution, bounded to a
+:: value range including the given `min_value`, excluding the `max_value`.
+::
+:: The given `algorithm` will be used to generate values, using the given
+:: `key` and `counter` values as the state for deterministic generation.
+:: A `Tensor.Gen.Random` instance should typically supply these values.
+:struct box Tensor.Op.Random.Uniform.BoundedIntegers
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name
+    algorithm Tensor.Gen.Random.Algorithm
+    key
+    counter
+    output_type Tensor.Any'non
+    output_shape
+    min_value
+    max_value
+  )
+    @_new(graph.new_operation("StatelessRandomUniformIntV2", name) -> (builder |
+      builder
+        .add_input(output_shape)
+        .add_input(key)
+        .add_input(counter)
+        .add_input(Tensor.Op.Const.new!(graph, "\(name).algorithm"
+          Tensor(I32).scalar(algorithm.i32)
+        ))
+        .add_input(min_value)
+        .add_input(max_value)
+        .set_attr_type("dtype", output_type.element_type_code)
+        .finish!
+    ))

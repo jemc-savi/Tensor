@@ -13,6 +13,7 @@
 :: When a dimension of size 1 is aligned with a dimension of larger size,
 :: the value of the size-1 dimension will be "broadcast" across all positions
 :: of the wide dimension, such that its value will correspond to many values.
+:: See <https://numpy.org/doc/stable/user/basics.broadcasting.html>
 ::
 :struct box Tensor.Op.Select
   :is Tensor.Op

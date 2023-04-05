@@ -122,7 +122,10 @@
     num_dims.times -> (index | shape << @_ffi.dim_at(@_ptr, index.i32).usize)
     shape
 
-  :fun element_count: _FFI.Tensor.element_count(@_ptr).usize
+  :fun element_count
+    count = _FFI.Tensor.element_count(@_ptr).usize
+    if count.is_zero (USize.one | count)
+
   :fun element_byte_width: T.byte_width
   :fun non element_type_code I32: _FFI.DataType(T).code // TODO: avoid I32 here?
 

@@ -1,0 +1,153 @@
+:: A seeded source of pseudo-randomness, usable by multiple nodes in a graph.
+::
+:: It tracks offsets of each use site internally during graph setup,
+:: so that each node in a graph that uses it will get distinct random results.
+:class Tensor.Gen.Random
+  :let _graph Tensor.Graph
+  :let _name String
+  :let algorithm Tensor.Gen.Random.Algorithm
+
+  // TODO: account for replica ID in a distributed setup, to vary the RNG key
+  // in a predictable way based on the seed plus replica id.
+  :let key Tensor.Graph.CanOutput
+
+  :let _base_counter Tensor.Graph.CanOutput
+
+  :var _next_offset U64: 0
+
+  :new _new(@_graph, @_name, @algorithm, @key, @_base_counter)
+
+  :: Seed a new pseudo-random source in the given graph, with the given seed.
+  ::
+  :: The seed must be a graph node output of type `Tensor(U32)` and shape `[2]`.
+  :fun non new!(
+    graph Tensor.Graph
+    name String
+    seed Tensor.Graph.CanOutput
+    algorithm = Tensor.Gen.Random.Algorithm.Philox
+  )
+    g = Tensor.Graph.Helper.new(graph)
+    case algorithm == (
+    | Tensor.Gen.Random.Algorithm.Philox |
+      // TODO: Try to simplify this once I've got a test case up and running with it.
+      philox_scrambled = Tensor.Op.Random.Uniform.Integers.new!(
+        g.graph, "\(name).seed_scramble"
+        algorithm
+        g.const!("\(name).seed_scramble.const", Tensor(U64).from_array([
+          0x02461e293ec8f720
+        ]))
+        g.cast!("\(name).seed_scramble.cast", seed, Tensor(U64))
+        Tensor(U32)
+        g.const!("\(name).seed_scramble.shape", Tensor(I32).from_array([4]))
+      )
+      philox_key = g.reshape!("\(name).key.reshape"
+        g.bitcast!("\(name).key.bitcast"
+          g.slice!("\(name).key.slice", philox_scrambled, [0], [2])
+          Tensor(U64)
+        )
+        [1]
+      )
+      philox_base_counter = g.pack!("\(name).counter", [
+        g.const!("\(name).counter.zero"
+          Tensor(U64).scalar(0)
+        )
+        g.bitcast!("\(name).counter.bitcast"
+          g.slice!("\(name).counter.slice", philox_scrambled, [2], [2])
+          Tensor(U64)
+        )
+      ])
+
+      @_new(
+        graph
+        name
+        algorithm
+        philox_key
+        philox_base_counter
+      )
+
+    | Tensor.Gen.Random.Algorithm.Threefry |
+      // TODO: Try to simplify this once I've got a test case up and running with it.
+      @_new(
+        graph
+        name
+        algorithm
+        Tensor.Op.Bitcast.new!(g.graph, "\(name).key"
+          Tensor.Op.Cast.new!(g.graph, "\(name).seed.cast"
+            seed
+            Tensor(U32)
+          )
+          Tensor(U64)
+        )
+        Tensor.Op.Const.new!(g.graph, "\(name).counter"
+          Tensor(U64).from_array([0])
+        )
+      )
+    |
+      g.graph.errors << Tensor.Graph.Error.new(
+        Tensor.Graph.Error.Code.InvalidArgument
+        "PRNG algorithm \(algorithm) has no seeding system implemented for it"
+      )
+
+      error!
+    )
+
+  :: Get a counter graph output suitable for use in pseudo-random generation,
+  :: reserving counting space for the given number of elements.
+  ::
+  :: The next time this method is called it will return a higher counter value,
+  :: with each call increasing the counter to a higher offset of the base value.
+  ::
+  :: This is what ensures that different graph nodes that use the same random
+  :: source will get distinct values when generating (but those distinct
+  :: values will still be deterministic based on the seed and graph layout).
+  :fun ref use_counter!(reserve_count U64)
+    g = Tensor.Graph.Helper.new(@_graph)
+
+    // TODO: Why does TensorFlow use 256? Can we justify it explicitly?
+    // TODO: Should it vary with the width of the data type being generated?
+    offset = @_next_offset, @_next_offset += reserve_count * 256
+
+    // If the current offset is zero, we can avoid the below operations
+    // and just return the base counter output directly.
+    return @_base_counter if offset.is_zero
+
+    // Otherwise we're going to create some ops that add the offset.
+    name String = "\(@_name).counter.plus\(offset)"
+    // TODO: Handle overflow for Philox using `select` to choose between
+    // taking `add([0, offset])` or `add([1, offset])` based on whether the
+    // former has a result whose second index is greater than that index
+    // of the original tensor value prior to adding.
+    g.add!(name
+      @_base_counter
+      g.const!("\(name).const"
+        if (@algorithm == Tensor.Gen.Random.Algorithm.Philox) (
+          Tensor(U64).from_array([0, offset])
+        |
+          Tensor(U64).from_array([offset])
+        )
+      )
+    )
+
+:: For parallel pseudo-random number generator algorithms, there are options
+:: to choose from. See the individual member documentation for more information.
+::
+:: Note that efficient parallel pseudo-random number generation (such as when
+:: doing tensor operations on GPUS) calls for a different class of algorithm
+:: than the typical algorithms used in single-threaded CPU contexts.
+:enum Tensor.Gen.Random.Algorithm
+  :: The Philox parallel pseudo-random number generator algorithm.
+  :: See <https://www.thesalmons.org/john/random123/papers/random123sc11.pdf>
+  ::
+  :: In that paper it is benchmarked as significantly outperforming `Threefry`
+  :: on GPUs, while very slightly underperforming it on CPUs.
+  :: As such, we use this as the default in most places with a selectable algo.
+  :member Philox 1
+  :fun non default: Tensor.Gen.Random.Algorithm.Philox
+
+  :: The Threefry parallel pseudo-random number generator algorithm.
+  :: See <https://www.thesalmons.org/john/random123/papers/random123sc11.pdf>
+  ::
+  :: In that paper it is benchmarked as significantly underperforming `Philox`
+  :: on GPUs, while very slightly outperforming it on CPUs.
+  :member Threefry 2
+
