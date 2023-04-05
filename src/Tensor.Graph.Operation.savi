@@ -20,7 +20,7 @@
   // This constructor is private so that only Graph can initiate it,
   // that yields the builder to the caller in a controlled way.
   :new _new(@graph, op_type String, oper_name String)
-    @_ptr = @_ffi.new(@graph._ptr, op_type.cpointer, oper_name.cpointer)
+    @_ptr = @_ffi.new(@graph._ptr, op_type.cstring, oper_name.cstring)
 
   :fun ref add_input(can_output Tensor.Graph.CanOutput)
     return @ if @_ptr.is_null
