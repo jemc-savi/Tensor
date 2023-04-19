@@ -86,10 +86,19 @@
     Tensor.Op.Logical.Or.new!(@graph, name, x, y)
 
   ///
-  // Arithmetic Operations
+  // Arithmetic Unary Operations
+
+  :fun ref square!(name, input)
+    Tensor.Op.Square.new!(@graph, name, input)
+
+  ///
+  // Arithmetic Binary Operations
 
   :fun ref add!(name, x, y)
     Tensor.Op.Add.new!(@graph, name, x, y)
+
+  :fun ref multiply!(name, x, y)
+    Tensor.Op.Multiply.new!(@graph, name, x, y)
 
   ///
   // Comparative Operations

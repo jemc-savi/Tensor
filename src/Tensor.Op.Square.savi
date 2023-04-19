@@ -1,0 +1,10 @@
+:: Squares the values in the given input tensor to produce an output tensor.
+:struct box Tensor.Op.Square
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name, input)
+    @_new(graph.new_operation("Square", name) -> (builder |
+      builder
+        .add_input(input)
+        .finish!
+    ))
