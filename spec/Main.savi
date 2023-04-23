@@ -15,12 +15,14 @@
       Spec.Run(Tensor.Op.Lesser.Spec).new(env)
       Spec.Run(Tensor.Op.Logical.Spec).new(env)
       Spec.Run(Tensor.Op.MatMul.Spec).new(env)
+      Spec.Run(Tensor.Op.Multiply.Spec).new(env)
       Spec.Run(Tensor.Op.Pack.Spec).new(env)
       Spec.Run(Tensor.Op.Random.Spec).new(env)
       Spec.Run(Tensor.Op.Reshape.Spec).new(env)
       Spec.Run(Tensor.Op.Select.Spec).new(env)
       Spec.Run(Tensor.Op.Slice.Spec).new(env)
       Spec.Run(Tensor.Op.Softmax.Spec).new(env)
+      Spec.Run(Tensor.Op.Square.Spec).new(env)
 
       ///
       // Tensor.Gen specs

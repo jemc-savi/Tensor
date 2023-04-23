@@ -1,0 +1,14 @@
+:class Tensor.Op.Square.Spec
+  :is Spec
+  :const describes: "Tensor.Op.Square"
+
+  :it "computes arithmetic squares"
+    _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
+      result = session.compute!(
+        g.square!("example"
+          g.const!("input", Tensor(I32).from_array([1, -2, 3, -4]))
+        )
+      )
+
+      assert: result.as!(Tensor(I32)).into_array == [1, 4, 9, 16]
+    ))
