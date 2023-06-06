@@ -1,5 +1,6 @@
 :trait box Tensor.Graph.CanOutput
   :fun output Tensor.Graph.Output
+  :fun name String
 
 :struct box Tensor.Graph.Output
   :let op Tensor.Graph.Operation
@@ -9,6 +10,9 @@
   :is Tensor.Graph.CanOutput
   :fun output: @
 
+  :fun name: "\(@op.name).outputs[\(@index)]"
+  :fun type: @_to_ffi.type
+
   :fun hash USize: @op._ptr.address.hash.bit_xor(@index.hash)
   :fun "=="(that @'box) Bool
     @op._ptr.address == that.op._ptr.address
@@ -17,7 +21,23 @@
   :fun _to_ffi
     _FFI.Output._new(@op._ptr, @index.i32)
 
+  :fun non _from_ffi_in_graph(graph, ffi _FFI.Output)
+    @new(
+      Tensor.Graph.Operation._new_with_unknown_name(graph, ffi._op_ptr)
+      ffi._index.usize
+    )
+
 :struct box _FFI.Output
   :let _op_ptr CPointer(_FFI.Operation)
   :let _index I32
   :new box _new(@_op_ptr, @_index)
+
+  :: Use this variant when passing into an FFI function that will fill
+  :: the values here. You shouldn't leave this in a null state.
+  :new _new_temporarily_null
+    @_op_ptr = CPointer(_FFI.Operation).null
+    @_index = 0
+
+  :fun type: @_get_type(@)
+  :ffi _get_type(output @'box) I32
+    :foreign_name TF_OperationOutputType

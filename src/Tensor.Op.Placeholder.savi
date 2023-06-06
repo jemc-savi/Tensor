@@ -1,0 +1,16 @@
+// TODO: Documentation
+:struct box Tensor.Op.Placeholder
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name
+    output_type Tensor.Any'non
+    output_shape
+  )
+    @_new(graph.new_operation("Placeholder", name) -> (builder |
+      builder
+        .set_attr_type("dtype", output_type.element_type_code)
+        .set_attr_shape("shape", output_shape)
+        .finish!
+    ))
+
+  :fun with_value(value): @op.input(0).with_value(value)

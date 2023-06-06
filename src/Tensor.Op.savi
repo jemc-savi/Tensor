@@ -4,3 +4,4 @@
 
   :is Tensor.Graph.CanOutput
   :fun output: @op.output(0)
+  :fun name: @op.name

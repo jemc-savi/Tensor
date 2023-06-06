@@ -6,7 +6,25 @@
   :fun _to_ffi
     _FFI.Input._new(@op._ptr, @index.i32)
 
+  :fun source
+    Tensor.Graph.Output._from_ffi_in_graph(
+      // TODO: Remove this cap-hacking cast:
+      _FFI.Cast(Tensor.Graph'box, Tensor.Graph).pointer(@op.graph)
+      @_to_ffi.source
+    )
+
+  :fun with_value(value): Tensor.Graph.Input.WithValue.new(@, value)
+
+:struct box Tensor.Graph.Input.WithValue
+  :let input Tensor.Graph.Input
+  :let value Tensor.Any'box
+  :new box (@input, @value)
+
 :struct _FFI.Input
   :let _op_ptr CPointer(_FFI.Operation)
   :let _index I32
   :new _new(@_op_ptr, @_index)
+
+  :fun source: @_get_source(@)
+  :ffi _get_source(input @'box) _FFI.Output
+    :foreign_name TF_OperationInput

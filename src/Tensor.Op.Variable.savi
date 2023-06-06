@@ -1,0 +1,86 @@
+// TODO: Documentation
+:struct box Tensor.Op.Variable
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name
+    output_type Tensor.Any'non
+    output_shape
+  )
+    placeholder = graph.new_operation("Placeholder", "\(name).initial_value") -> (builder |
+      builder
+        .set_attr_type("dtype", output_type.element_type_code)
+        .set_attr_shape("shape", output_shape)
+        .finish!
+    )
+    reference = graph.new_operation("VariableV2", name) -> (builder |
+      builder
+        .set_attr_type("dtype", output_type.element_type_code)
+        .set_attr_shape("shape", output_shape)
+        // TODO: add support for non-default `container` attr?
+        // TODO: add support for non-default `shared_name` attr?
+        .finish!
+    )
+    initial_assign = graph.new_operation("Assign", "\(name).assign_initial_value") -> (builder |
+      builder
+        .add_input(reference.output(0))
+        .add_input(placeholder.output(0))
+        .finish!
+    )
+    initial_snapshot = graph.new_operation("Identity", "\(name).initial_snapshot") -> (builder |
+      builder
+        .add_input(initial_assign.output(0))
+        .finish!
+    )
+    @_new(initial_snapshot)
+
+  :fun _initial_assign_op: @op.input(0).source.op
+  :fun _reference_op: @_initial_assign_op.input(0).source.op
+  :fun _placeholder_op: @_initial_assign_op.input(1).source.op
+  :fun reference: Tensor.Op.Variable.Reference._new(@_reference_op)
+
+  :fun with_initial_value(value): @_placeholder_op.input(0).with_value(value)
+
+//   // TODO: remove graph param
+//   :fun assigned_from!(graph Tensor.Graph, from Tensor.Graph.CanOutput)
+//     Tensor.Op.Variable.Assign.new!(
+//       graph
+//       "\(@name).assigned_from/\(from.name)/"
+//       @
+//       from
+//     )
+
+//   :fun read!(graph Tensor.Graph, name)
+//     Tensor.Op.Variable.Read.new!(graph, name, @)
+
+:struct box Tensor.Op.Variable.Reference
+  :is Tensor.Op
+
+// // TODO: Documentation
+// :struct box Tensor.Op.Variable.Assign
+//   :is Tensor.Op
+
+//   :fun non new!(graph Tensor.Graph, name
+//     var Tensor.Op.Variable
+//     from Tensor.Graph.CanOutput
+//   )
+//     @_new(graph.new_operation("Assign", name) -> (builder |
+//       builder
+//         .add_input(var)
+//         .add_input(from)
+//         // TODO: add support for disabling `validate_shape` attr?
+//         // TODO: add support for disabling `use_locking` attr?
+//         .finish!
+//     ))
+
+// // TODO: Documentation
+// :struct box Tensor.Op.Variable.Read
+//   :is Tensor.Op
+
+//   :fun non new!(graph Tensor.Graph, name, var Tensor.Op.Variable)
+//     @_new(graph.new_operation("Identity", name) -> (builder |
+//       builder
+//         .add_input(var)
+//         // TODO: add support for disabling `validate_shape` attr?
+//         // TODO: add support for disabling `use_locking` attr?
+//         .finish!
+//     ))

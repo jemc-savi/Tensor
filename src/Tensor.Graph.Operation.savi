@@ -1,26 +1,35 @@
 :class box Tensor.Graph.Operation
-  :fun non _ffi: _FFI.Graph
+  :fun non _ffi: _FFI.Operation
   :let _ptr CPointer(_FFI.Operation)
   :let graph Tensor.Graph
+  :let name String
 
   // No need for a finalizer - memory for this `_ptr` is owned by `graph._ptr`
 
-  // :fun input(index): Tensor.Graph.Input.new(@, index)
-  :fun output(index): Tensor.Graph.Output.new(@, index)
+  :fun input(index): Tensor.Graph.Input.new(@, index) // TODO: partial?
+  :fun output(index): Tensor.Graph.Output.new(@, index) // TODO: partial?
+  :fun output_count: @_ffi.get_num_outputs(@_ptr).usize
 
-  :new _new(@graph, @_ptr)
+  :new box _new(@graph, @name, @_ptr)
+
+  :fun non _new_with_unknown_name(graph, ptr) @'box
+    name_ptr = @_ffi.get_name(ptr)
+    name_len = _FFI.strlen(name_ptr).usize
+    name = String.val_from_cpointer(name_ptr, name_len, name_len)
+    @_new(graph, name, ptr)
 
 :class Tensor.Graph.Operation.Builder
   :fun non _ffi: _FFI.Operation.Builder
   :var _ptr: CPointer(_FFI.Operation.Builder).null
   :let graph Tensor.Graph
+  :let _name String
 
   // No need for a finalizer - memory for this `_ptr` is owned by `graph._ptr`
 
   // This constructor is private so that only Graph can initiate it,
   // that yields the builder to the caller in a controlled way.
-  :new _new(@graph, op_type String, oper_name String)
-    @_ptr = @_ffi.new(@graph._ptr, op_type.cstring, oper_name.cstring)
+  :new _new(@graph, op_type String, @_name)
+    @_ptr = @_ffi.new(@graph._ptr, op_type.cstring, @_name.cstring)
 
   :fun ref add_input(can_output Tensor.Graph.CanOutput)
     return @ if @_ptr.is_null
@@ -61,6 +70,26 @@
     )
     @
 
+  :fun ref set_attr_shape(attr_name String, dimensions Array(USize))
+    return @ if @_ptr.is_null
+
+    dimensions_i64_ptr =
+      if (USize.byte_width == I64.byte_width) (
+        _FFI.Cast(CPointer(USize), CPointer(I64)).pointer(dimensions.cpointer)
+      |
+        dimensions_i64 Array(I64) = []
+        dimensions.each -> (size | dimensions_i64 << size.i64)
+        dimensions_i64.cpointer
+      )
+
+    @_ffi.set_attr_shape(
+      @_ptr
+      attr_name.cstring
+      dimensions_i64_ptr
+      dimensions.size.i32
+    )
+    @
+
   :fun ref set_attr_tensor!(attr_name String, value Tensor.Any) // TODO: what is the right cap for Tensor?
     return @ if @_ptr.is_null
     @_ffi.set_attr_tensor(
@@ -76,8 +105,15 @@
     operation_ptr = @_ffi.finish(@_ptr, @graph._status_ptr)
     @_ptr = @_ptr.null
     @graph._check_status!
-    Tensor.Graph.Operation._new(@graph, operation_ptr)
+    Tensor.Graph.Operation._new(@graph, @_name, operation_ptr)
 
+
+:module _FFI.Operation
+  :ffi get_name(ptr CPointer(@)) CPointer(U8)'ref // TODO: CPointer(U8)'val
+    :foreign_name TF_OperationName
+
+  :ffi get_num_outputs(ptr CPointer(@)) I32
+    :foreign_name TF_OperationNumOutputs
 
 :module _FFI.Operation.Builder
   :ffi new(
@@ -133,6 +169,14 @@
   ) None
     :foreign_name TF_SetAttrType
 
+  :ffi set_attr_shape(
+    ptr CPointer(@)
+    attr_name CPointer(U8)
+    dimension_list CPointer(I64)
+    dimension_count I32
+  ) None
+    :foreign_name TF_SetAttrShape
+
   :ffi set_attr_tensor(
     ptr CPointer(@)
     attr_name CPointer(U8)
@@ -140,5 +184,3 @@
     status_ptr CPointer(_FFI.Status)
   ) None
     :foreign_name TF_SetAttrTensor
-
-:module _FFI.Operation

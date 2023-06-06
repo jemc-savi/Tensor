@@ -12,6 +12,18 @@
   :fun ref const!(name, value)
     Tensor.Op.Const.new!(@graph, name, value)
 
+  :fun ref placeholder!(name, output_type, output_shape)
+    Tensor.Op.Placeholder.new!(@graph, name, output_type, output_shape)
+
+  :fun ref variable!(name, output_type, output_shape)
+    Tensor.Op.Variable.new!(@graph, name, output_type, output_shape)
+
+  ///
+  // Variable Mutations
+
+  :fun ref apply_gradient_descent!(name, gradient, var, learning_rate)
+    Tensor.Op.Optimize.GradientDescent.new!(@graph, name, gradient, var, learning_rate)
+
   ///
   // Pseudo-Random Sources
 
