@@ -32,7 +32,45 @@
     builder = Tensor.Graph.Operation.Builder._new(@, op_type, oper_name)
     yield builder
 
+  :fun ref add_gradients!(
+    y_list Array(Tensor.Graph.CanOutput)'box
+    x_list Array(Tensor.Graph.CanOutput)'box
+  )
+    y_ffis = Array(_FFI.Output).new(y_list.size)
+    dy_ffis = Array(_FFI.Output).new(y_list.size)
+    y_list.each -> (y |
+      y_ffis << y.output._to_ffi
+      dy_ffis << _FFI.Output._new_temporarily_null
+    )
+
+    x_ffis = Array(_FFI.Output).new(x_list.size)
+    x_list.each -> (x | x_ffis << x.output._to_ffi)
+
+    @_ffi.add_gradients(
+      @_ptr
+      y_ffis.cpointer, y_ffis.size.i32
+      x_ffis.cpointer, x_ffis.size.i32
+      CPointer(_FFI.Output).null
+      @_status_ptr
+      dy_ffis.cpointer
+    )
+
+    dy_list = Array(Tensor.Graph.Output).new(dy_ffis.size)
+    dy_ffis.each -> (dy_ffi |
+      dy_list << Tensor.Graph.Output._from_ffi_in_graph(@, dy_ffi)
+    )
+    dy_list
 
 :module _FFI.Graph
   :ffi new CPointer(@)
     :foreign_name TF_NewGraph
+
+  :ffi add_gradients(
+    ptr CPointer(@)
+    y_list CPointer(_FFI.Output), y_count I32
+    x_list CPointer(_FFI.Output), x_count I32
+    dx CPointer(_FFI.Output)
+    status CPointer(_FFI.Status)
+    dy CPointer(_FFI.Output)
+  ) None
+    :foreign_name TF_AddGradients

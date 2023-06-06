@@ -43,10 +43,17 @@
 
   :fun ref compute!(
     can_output Tensor.Graph.CanOutput
+    inputs Array(Tensor.Graph.Input.WithValue)'box = []
   ) Tensor.Any
     @open!
 
-    // TODO: accept input list as a parameter
+    input_ffis = Array(_FFI.Input).new(inputs.size)
+    input_tensor_ptrs = Array(CPointer(_FFI.Tensor)).new(inputs.size)
+    inputs.each -> (input |
+      input_ffis << input.input._to_ffi
+      input_tensor_ptrs << input.value._ptr
+    )
+
     output = can_output.output
     output_ffi = output._to_ffi
     target_op_ptr = output.op._ptr
@@ -57,9 +64,9 @@
       CPointer(_FFI.Buffer).null
 
       // Inputs
-      CPointer(_FFI.Input).null
-      CPointer(CPointer(_FFI.Tensor)).null
-      0
+      input_ffis.cpointer
+      input_tensor_ptrs.cpointer
+      inputs.size.i32
 
       // Outputs
       stack_address_of_variable output_ffi
@@ -79,10 +86,17 @@
 
   :fun ref compute_many!(
     outputs Array(Tensor.Graph.Output)'box // TODO: use CanOutput instead of just Output
+    inputs Array(Tensor.Graph.Input.WithValue)'box = []
   )
     @open!
 
-    // TODO: accept input list as a parameter
+    input_ffis = Array(_FFI.Input).new(inputs.size)
+    input_tensor_ptrs = Array(CPointer(_FFI.Tensor)).new(inputs.size)
+    inputs.each -> (input |
+      input_ffis << input.input._to_ffi
+      input_tensor_ptrs << input.value._ptr
+    )
+
     output_ffis = Array(_FFI.Output).new(outputs.size)
     output_tensor_ptrs = Array(CPointer(_FFI.Tensor)).new(outputs.size)
     target_op_ptrs = Array(CPointer(_FFI.Operation)).new(outputs.size)
@@ -97,9 +111,9 @@
       CPointer(_FFI.Buffer).null
 
       // Inputs
-      CPointer(_FFI.Input).null
-      CPointer(CPointer(_FFI.Tensor)).null
-      0
+      input_ffis.cpointer
+      input_tensor_ptrs.cpointer
+      inputs.size.i32
 
       // Outputs
       output_ffis.cpointer
