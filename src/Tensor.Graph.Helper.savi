@@ -160,6 +160,16 @@
   :fun ref pack!(name, inputs, axis USize = 0)
     Tensor.Op.Pack.new!(@graph, name, inputs, axis)
 
+  :fun ref concat!(name, inputs, axis USize = 0)
+    Tensor.Op.Concat.new!(@graph, name, inputs
+      @const!("\(name).axis"
+        Tensor(I32).scalar(axis.i32)
+      )
+    )
+
+  :fun ref concat_dynamic!(name, inputs, axis)
+    Tensor.Op.Concat.new!(@graph, name, inputs, axis)
+
   :fun ref slice!(
     name
     input
