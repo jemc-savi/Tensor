@@ -39,7 +39,7 @@
       ]
     ))
 
-  :it "complains on session comput if the output shape is out of bounds"
+  :it "complains on session compute if the output shape is out of bounds"
     _WithGraphHelper.run(@env, False) -> (g, session |
       assert error: session.compute!(
         g.slice!("example"
