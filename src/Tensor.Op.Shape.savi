@@ -1,0 +1,9 @@
+:: Get the shape of the input tensor, returned as a tensor.
+:struct box Tensor.Op.Shape
+  :is Tensor.Op
+  :fun non new!(graph Tensor.Graph, name, input)
+    @_new(graph.new_operation("Shape", name) -> (builder |
+      builder
+        .add_input(input)
+        .finish!
+    ))

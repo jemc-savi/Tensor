@@ -139,6 +139,9 @@
   :fun ref cast_with_floating_point_truncation!(name, input, output_type)
     Tensor.Op.Cast.new!(@graph, name, input, output_type, True)
 
+  :fun ref shape!(name, input)
+    Tensor.Op.Shape.new!(@graph, name, input)
+
   :fun ref reshape!(name, input, output_shape Array(USize))
     Tensor.Op.Reshape.new!(@graph, name, input
       @const!("\(name).new_shape"
