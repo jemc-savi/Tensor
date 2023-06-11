@@ -151,6 +151,9 @@
       )
     )
 
+  :fun ref reshape_dynamic!(name, input, output_shape)
+    Tensor.Op.Reshape.new!(@graph, name, input, output_shape)
+
   ///
   // Fan-out/Fan-in Operations
 
