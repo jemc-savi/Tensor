@@ -20,6 +20,7 @@
       Spec.Run(Tensor.Op.Random.Spec).new(env)
       Spec.Run(Tensor.Op.Reshape.Spec).new(env)
       Spec.Run(Tensor.Op.Select.Spec).new(env)
+      Spec.Run(Tensor.Op.Shape.Spec).new(env)
       Spec.Run(Tensor.Op.Slice.Spec).new(env)
       Spec.Run(Tensor.Op.Softmax.Spec).new(env)
       Spec.Run(Tensor.Op.Square.Spec).new(env)
