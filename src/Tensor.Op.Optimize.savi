@@ -1,0 +1,36 @@
+:: Use the classic gradient descent algorithm to apply the given `gradient` to
+:: the given `variable`, updating the variable in the descending direction,
+:: with the given `learning_rate` factor adjusting the amount of the change.
+::
+::
+:struct box Tensor.Op.Optimize.GradientDescent
+  :is Tensor.Op
+
+  :fun non new!(graph Tensor.Graph, name
+    gradient Tensor.Graph.CanOutput
+    var Tensor.Op.Variable
+    learning_rate Tensor.Graph.CanOutput
+  )
+    @_new(graph.new_operation("ApplyGradientDescent", name) -> (builder |
+      builder
+        .add_input(var.reference)
+        .add_input(learning_rate)
+        .add_input(gradient)
+        .finish!
+    ))
+
+// TODO: Tensor.Op.Optimize.AdaMax                  => ApplyAdaMax
+// TODO: Tensor.Op.Optimize.Adadelta                => ApplyAdadelta
+// TODO: Tensor.Op.Optimize.Adagrad                 => ApplyAdagrad
+// TODO: Tensor.Op.Optimize.AdagradDA               => ApplyAdagradDA
+// TODO: Tensor.Op.Optimize.AdagradV2               => ApplyAdagradV2
+// TODO: Tensor.Op.Optimize.Adam                    => ApplyAdam
+// TODO: Tensor.Op.Optimize.AddSign                 => ApplyAddSign
+// TODO: Tensor.Op.Optimize.CenteredRMSProp         => ApplyCenteredRMSProp
+// TODO: Tensor.Op.Optimize.Ftrl                    => ApplyFtrl
+// TODO: Tensor.Op.Optimize.FtrlV2                  => ApplyFtrlV2
+// TODO: Tensor.Op.Optimize.Momentum                => ApplyMomentum
+// TODO: Tensor.Op.Optimize.PowerSign               => ApplyPowerSign
+// TODO: Tensor.Op.Optimize.ProximalAdagrad         => ApplyProximalAdagrad
+// TODO: Tensor.Op.Optimize.ProximalGradientDescent => ApplyProximalGradientDescent
+// TODO: Tensor.Op.Optimize.RMSProp                 => ApplyRMSProp

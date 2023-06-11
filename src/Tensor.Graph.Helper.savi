@@ -12,6 +12,18 @@
   :fun ref const!(name, value)
     Tensor.Op.Const.new!(@graph, name, value)
 
+  :fun ref placeholder!(name, output_type, output_shape)
+    Tensor.Op.Placeholder.new!(@graph, name, output_type, output_shape)
+
+  :fun ref variable!(name, output_type, output_shape)
+    Tensor.Op.Variable.new!(@graph, name, output_type, output_shape)
+
+  ///
+  // Variable Mutations
+
+  :fun ref apply_gradient_descent!(name, gradient, var, learning_rate)
+    Tensor.Op.Optimize.GradientDescent.new!(@graph, name, gradient, var, learning_rate)
+
   ///
   // Pseudo-Random Sources
 
@@ -27,7 +39,7 @@
     output_shape Array(USize)
   )
     output_shape_tensor = Tensor(I64).generate(output_shape.size) -> (i |
-      output_shape[i]!.i64!
+      output_shape[i]!.i64
     )
     Tensor.Op.Random.Uniform.new!(@graph, name
       gen_random.algorithm
@@ -43,7 +55,7 @@
     output_shape Array(USize)
   )
     output_shape_tensor = Tensor(I64).generate(output_shape.size) -> (i |
-      output_shape[i]!.i64!
+      output_shape[i]!.i64
     )
     Tensor.Op.Random.Uniform.Integers.new!(@graph, name
       gen_random.algorithm
@@ -61,7 +73,7 @@
     max_val Tensor.Any
   )
     output_shape_tensor = Tensor(I64).generate(output_shape.size) -> (i |
-      output_shape[i]!.i64!
+      output_shape[i]!.i64
     )
     Tensor.Op.Random.Uniform.BoundedIntegers.new!(@graph, name
       gen_random.algorithm
@@ -86,10 +98,19 @@
     Tensor.Op.Logical.Or.new!(@graph, name, x, y)
 
   ///
-  // Arithmetic Operations
+  // Arithmetic Unary Operations
+
+  :fun ref square!(name, input)
+    Tensor.Op.Square.new!(@graph, name, input)
+
+  ///
+  // Arithmetic Binary Operations
 
   :fun ref add!(name, x, y)
     Tensor.Op.Add.new!(@graph, name, x, y)
+
+  :fun ref multiply!(name, x, y)
+    Tensor.Op.Multiply.new!(@graph, name, x, y)
 
   ///
   // Comparative Operations
@@ -118,11 +139,14 @@
   :fun ref cast_with_floating_point_truncation!(name, input, output_type)
     Tensor.Op.Cast.new!(@graph, name, input, output_type, True)
 
+  :fun ref shape!(name, input)
+    Tensor.Op.Shape.new!(@graph, name, input)
+
   :fun ref reshape!(name, input, output_shape Array(USize))
     Tensor.Op.Reshape.new!(@graph, name, input
       @const!("\(name).new_shape"
         Tensor(I64).generate(output_shape.size) -> (index |
-          output_shape[index]!.i64!
+          output_shape[index]!.i64
         )
       )
     )
@@ -141,15 +165,29 @@
   )
     @slice_dynamic!(name, input
       @const!("\(name).begin_indices"
-        Tensor(I64).generate(begin_indices.size) -> (i | begin_indices[i]!.i64!)
+        Tensor(I64).generate(begin_indices.size) -> (i | begin_indices[i]!.i64)
       )
       @const!("\(name).output_shape"
-        Tensor(I64).generate(output_shape.size) -> (i | output_shape[i]!.i64!)
+        Tensor(I64).generate(output_shape.size) -> (i | output_shape[i]!.i64)
       )
     )
 
   :fun ref slice_dynamic!(name, input, begin_indices, output_shape)
     Tensor.Op.Slice.new!(@graph, name, input, begin_indices, output_shape)
+
+  :fun ref split_varying!(name, input, axis USize, split_sizes Array(USize))
+    Tensor.Op.SplitV.new!(@graph, name, input
+      @const!("\(name).axis"
+        Tensor(I32).scalar(axis.i32)
+      )
+      @const!("\(name).split_sizes"
+        Tensor(I64).generate(split_sizes.size) -> (i | split_sizes[i]!.i64)
+      )
+      split_sizes.size
+    )
+
+  :fun ref split_varying_dynamic!(name, input, axis, split_sizes, split_sizes_count)
+    Tensor.Op.SplitV.new!(@graph, name, input, axis, split_sizes, split_sizes_count)
 
   ///
   // Other Unary Operations
