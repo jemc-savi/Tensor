@@ -23,6 +23,7 @@
       Spec.Run(Tensor.Op.Shape.Spec).new(env)
       Spec.Run(Tensor.Op.Slice.Spec).new(env)
       Spec.Run(Tensor.Op.Softmax.Spec).new(env)
+      Spec.Run(Tensor.Op.SplitV.Spec).new(env)
       Spec.Run(Tensor.Op.Square.Spec).new(env)
 
       ///

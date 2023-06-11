@@ -15,6 +15,6 @@
     @_new(graph.new_operation("Pack", name) -> (builder |
       builder
         .add_input_list(inputs)
-        .set_attr_i64("axis", axis.i64!)
+        .set_attr_i64("axis", axis.i64)
         .finish!
     ))
