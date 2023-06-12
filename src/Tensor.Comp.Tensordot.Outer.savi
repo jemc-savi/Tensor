@@ -1,0 +1,34 @@
+:: Specialized implementation of tensordot with [0, -1] hard-coded as the axes.
+::
+:: This is a common use case for tensordot, and we can skip some complexity
+:: by implementing only this case.
+::
+:: It is effectively a matrix multiplication, with the first dimension of the
+:: first tensor and the last dimension of the second tensor as the matrix axes.
+:module Tensor.Comp.TensorDot.Outer
+  :fun build!(g Tensor.Graph.Helper.Methods, name String, a, b)
+    a_shape = g.shape!("\(name).a_shape", a)
+    b_shape = g.shape!("\(name).b_shape", b)
+
+    a_shape_split = g.split_varying!("\(name).a_shape_split", a_shape, 0, [-1, 1])
+    b_shape_split = g.split_varying!("\(name).b_shape_split", b_shape, 0, [1, -1])
+
+    a_free_dims = a_shape_split.output_slice(0)
+    a_target_dim = a_shape_split.output_slice(1)
+    b_target_dim = b_shape_split.output_slice(0)
+    b_free_dims = b_shape_split.output_slice(1)
+
+    neg_one = g.const!("\(name).neg_one", Tensor(I32).from_array([-1]))
+    zero_axis = g.const!("\(name).zero_axis", Tensor(I32).scalar(0))
+
+    g.reshape_dynamic!("\(name).result"
+      g.matmul!("\(name).matmul"
+        g.reshape_dynamic!("\(name).a_reshape", a
+          g.concat_dynamic!("\(name).a_new_shape", [neg_one, a_target_dim], zero_axis)
+        )
+        g.reshape_dynamic!("\(name).b_reshape", b
+          g.concat_dynamic!("\(name).b_new_shape", [b_target_dim, neg_one], zero_axis)
+        )
+      )
+      g.concat_dynamic!("\(name).c_new_shape", [a_free_dims, b_free_dims], zero_axis)
+    )
