@@ -10,6 +10,7 @@
       Spec.Run(Tensor.Op.Add.Spec).new(env)
       Spec.Run(Tensor.Op.Bitcast.Spec).new(env)
       Spec.Run(Tensor.Op.Cast.Spec).new(env)
+      Spec.Run(Tensor.Op.Concat.Spec).new(env)
       Spec.Run(Tensor.Op.Const.Spec).new(env)
       Spec.Run(Tensor.Op.Greater.Spec).new(env)
       Spec.Run(Tensor.Op.Lesser.Spec).new(env)

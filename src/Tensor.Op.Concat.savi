@@ -1,0 +1,20 @@
+:: Create a new output tensor that joins the given input tensors along the
+:: given `axis`. Each input tensor must have the same shape, except in the
+:: dimension corresponding to `axis`. The output tensor will be the same shape
+:: as the inputs, except that the dimension corresponding to `axis` will have
+:: a size corresponding to the sum of that dimension of all inputs.
+::
+:: The given axis must be a rank-0 tensor (i.e. a scalar).
+:struct box Tensor.Op.Concat
+  :is Tensor.Op
+  :fun non new!(graph Tensor.Graph, name
+    inputs Array(Tensor.Graph.CanOutput)'box
+    axis
+  )
+    @_new(graph.new_operation("ConcatV2", name) -> (builder |
+      builder
+        .add_input_list(inputs)
+        .add_input(axis)
+        .set_attr_i64("N", inputs.size.i64)
+        .finish!
+    ))
