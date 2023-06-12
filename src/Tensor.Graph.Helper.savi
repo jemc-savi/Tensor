@@ -228,3 +228,9 @@
 
   :fun ref select!(name, condition, true_case, false_case)
     Tensor.Op.Select.new!(@graph, name, condition, true_case, false_case)
+
+  ///
+  // Composite Operations
+
+  :fun ref tensordot_outer!(name, a, b)
+    Tensor.Comp.TensorDot.Outer.build!(@, name, a, b)

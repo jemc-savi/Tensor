@@ -28,6 +28,11 @@
       Spec.Run(Tensor.Op.Square.Spec).new(env)
 
       ///
+      // Tensor.Comp specs
+
+      Spec.Run(Tensor.Comp.TensorDot.Outer.Spec).new(env)
+
+      ///
       // Tensor.Gen specs
 
       Spec.Run(Tensor.Gen.Random.Spec).new(env)
