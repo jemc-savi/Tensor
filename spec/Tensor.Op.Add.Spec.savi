@@ -5,9 +5,9 @@
   :it "computes arithmetic addition"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.add!("example"
-          g.const!("x", Tensor(I32).from_array([1, 2, 3, 4]))
-          g.const!("y", Tensor(I32).from_array([5, 6, 7, 8]))
+        g.add("example"
+          g.const("x", Tensor(I32).from_array([1, 2, 3, 4]))
+          g.const("y", Tensor(I32).from_array([5, 6, 7, 8]))
         )
       )
 
@@ -17,9 +17,9 @@
   :it "can broadcast smaller sizes/shapes across larger sizes/shapes"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.add!("example"
-          g.const!("x", Tensor(I32).from_array([-1, -3, -5]))
-          g.const!("y", Tensor(I32).from_array([
+        g.add("example"
+          g.const("x", Tensor(I32).from_array([-1, -3, -5]))
+          g.const("y", Tensor(I32).from_array([
             1, 2, 3
             4, 5, 6
             7, 8, 9

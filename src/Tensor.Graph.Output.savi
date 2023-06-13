@@ -12,15 +12,17 @@
   :fun output: @
 
   :fun name: "\(@op.name).outputs[\(@index)]"
-  :fun type: @_to_ffi.type
+  // :fun type: try (@_to_ffi!.type | 0) // TODO: is this okay?
 
   :fun shape
-    status_ptr = CPointer(_FFI.Status).null // TODO: is this okay?
+    ffi = try (@_to_ffi! | return Tensor.Shape.unknown)
+
+    // We don't bother checking the status here because we know that the
+    // operation comes from the given graph, and thus it cannot error here.
+    status_ptr = CPointer(_FFI.Status).null
 
     rank = try (
-      _FFI.Output._get_rank(
-        @op.graph._ptr, @_to_ffi, status_ptr
-      ).usize!
+      _FFI.Output._get_rank(@op.graph._ptr, ffi, status_ptr).usize!
     |
       return Tensor.Shape.unknown
     )
@@ -32,7 +34,7 @@
     // for inspiration, but generalize to `Array`.
 
     _FFI.Output._get_shape(
-      @op.graph._ptr, @_to_ffi, shape.cpointer, rank.i32, status_ptr
+      @op.graph._ptr, ffi, shape.cpointer, rank.i32, status_ptr
     )
 
     Tensor.Shape.new(shape)
@@ -42,7 +44,8 @@
     @op._ptr.address == that.op._ptr.address
     && @index == that.index
 
-  :fun _to_ffi
+  :fun _to_ffi!
+    error! if @op._ptr.is_null
     _FFI.Output._new(@op._ptr, @index.i32)
 
   :fun non _from_ffi_in_graph(graph, ffi _FFI.Output)

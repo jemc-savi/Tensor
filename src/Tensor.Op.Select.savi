@@ -18,7 +18,7 @@
 :struct box Tensor.Op.Select
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     condition_tensor
     true_case_tensor
     false_case_tensor
@@ -28,5 +28,5 @@
         .add_input(condition_tensor)
         .add_input(true_case_tensor)
         .add_input(false_case_tensor)
-        .finish!
+        .finish
     ))

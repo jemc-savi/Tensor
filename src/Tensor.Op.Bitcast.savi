@@ -4,7 +4,7 @@
 :: For a similar-value-preserving conversion, use `Tensor.Op.Cast` instead.
 :struct box Tensor.Op.Bitcast
   :is Tensor.Op
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     input
     output_type Tensor.Any'non
   )
@@ -13,5 +13,5 @@
         .add_input(input)
         // TODO: also T?
         .set_attr_type("type", output_type.element_type_code)
-        .finish!
+        .finish
     ))

@@ -5,8 +5,8 @@
   :it "does bounds-wrapping when converting to a narrower integer type"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.cast!("example"
-          g.const!("input", Tensor(I16).from_array([0, 1, 0xffff, 0x7890]))
+        g.cast("example"
+          g.const("input", Tensor(I16).from_array([0, 1, 0xffff, 0x7890]))
           Tensor(I8)
         )
       )
@@ -17,8 +17,8 @@
   :it "rounds a floating-point value to its nearest integer value"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.cast!("example"
-          g.const!("input", Tensor(F64).from_array([2.4, 2.5, 2.6, -2.5]))
+        g.cast("example"
+          g.const("input", Tensor(F64).from_array([2.4, 2.5, 2.6, -2.5]))
           Tensor(I32)
         )
       )
@@ -29,8 +29,8 @@
   :it "rounds to the nearest representable less-precise floating-point value"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.cast!("example"
-          g.const!("input", Tensor(F64).from_array([-1e26]))
+        g.cast("example"
+          g.const("input", Tensor(F64).from_array([-1e26]))
           Tensor(F32)
         )
       )
@@ -41,8 +41,8 @@
   :it "can be set to round with floating-point truncation (toward zero)"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.cast_with_floating_point_truncation!("example"
-          g.const!("input", Tensor(F64).from_array([-1e26]))
+        g.cast_with_floating_point_truncation("example"
+          g.const("input", Tensor(F64).from_array([-1e26]))
           Tensor(F32)
         )
       )

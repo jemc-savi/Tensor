@@ -5,10 +5,10 @@
   :it "uses the condition input to select between one value operand and another"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.select!("example"
-          g.const!("cond", Tensor(Bool).from_array([True, False, True, False]))
-          g.const!("t", Tensor(F64).from_array([1, 2, 3, 4]))
-          g.const!("f", Tensor(F64).from_array([5, 6, 7, 8]))
+        g.select("example"
+          g.const("cond", Tensor(Bool).from_array([True, False, True, False]))
+          g.const("t", Tensor(F64).from_array([1, 2, 3, 4]))
+          g.const("f", Tensor(F64).from_array([5, 6, 7, 8]))
         )
       )
 
@@ -17,33 +17,37 @@
 
   :it "complains if the condition input is a non-boolean type"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: g.select!("example"
-        g.const!("cond", Tensor(F64).from_array([1, 0, 1, 0]))
-        g.const!("t", Tensor(F64).from_array([1, 2, 3, 4]))
-        g.const!("f", Tensor(F64).from_array([5, 6, 7, 8]))
+      assert error: session.compute!(
+        g.select("example"
+          g.const("cond", Tensor(F64).from_array([1, 0, 1, 0]))
+          g.const("t", Tensor(F64).from_array([1, 2, 3, 4]))
+          g.const("f", Tensor(F64).from_array([5, 6, 7, 8]))
+        )
       )
     )
 
   :it "complains if the two value operands are not the same type"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: g.select!("example"
-        g.const!("cond", Tensor(Bool).from_array([True, False, True, False]))
-        g.const!("t", Tensor(F64).from_array([1, 2, 3, 4]))
-        g.const!("f", Tensor(F32).from_array([5, 6, 7, 8]))
+      assert error: session.compute!(
+        g.select("example"
+          g.const("cond", Tensor(Bool).from_array([True, False, True, False]))
+          g.const("t", Tensor(F64).from_array([1, 2, 3, 4]))
+          g.const("f", Tensor(F32).from_array([5, 6, 7, 8]))
+        )
       )
     )
 
   :it "can broadcast smaller sizes/shapes across larger sizes/shapes"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.select!("example"
-          g.const!("cond", Tensor(Bool).from_array([True, False, True]))
-          g.const!("t", Tensor(F64).from_array([
+        g.select("example"
+          g.const("cond", Tensor(Bool).from_array([True, False, True]))
+          g.const("t", Tensor(F64).from_array([
             1, 2, 3
             4, 5, 6
             7, 8, 9
           ]).try_reshape(Tensor.Shape.new([3, 3])))
-          g.const!("f", Tensor(F64).from_array([
+          g.const("f", Tensor(F64).from_array([
             100
             200
             300
@@ -60,9 +64,11 @@
 
   :it "can't broadcast across incompatible sizes/shapes"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: g.select!("example"
-        g.const!("cond", Tensor(Bool).from_array([True, False, True, False]))
-        g.const!("t", Tensor(F64).from_array([1, 2, 3, 4]))
-        g.const!("f", Tensor(F32).from_array([5, 6, 7]))
+      assert error: session.compute!(
+        g.select("example"
+          g.const("cond", Tensor(Bool).from_array([True, False, True, False]))
+          g.const("t", Tensor(F64).from_array([1, 2, 3, 4]))
+          g.const("f", Tensor(F32).from_array([5, 6, 7]))
+        )
       )
     )

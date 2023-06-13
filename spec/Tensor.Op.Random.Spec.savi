@@ -3,14 +3,14 @@
   :const describes: "Tensor.Op.Random"
 
   :fun random!(g Tensor.Graph.Helper.Methods)
-    g.gen_random!("random"
-      g.const!("seed", Tensor(U32).from_array([2, 3]))
+    g.gen_random("random"
+      g.const("seed", Tensor(U32).from_array([2, 3]))
     )
 
   :it "generates random floating-point values between zero and one"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.random_uniform!("example", @random!(g)
+        g.random_uniform("example", @random!(g)
           Tensor(F64)
           Tensor.Shape.new([5, 3])
         )
@@ -29,7 +29,7 @@
   :it "generates random integer values"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.random_uniform_integers!("example", @random!(g)
+        g.random_uniform_integers("example", @random!(g)
           Tensor(U32)
           Tensor.Shape.new([5, 3])
         )
@@ -48,7 +48,7 @@
   :it "generates random integer values within a given bounds"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.random_uniform_bounded_integers!("example", @random!(g)
+        g.random_uniform_bounded_integers("example", @random!(g)
           Tensor(I32)
           Tensor.Shape.new([5, 12])
           Tensor(I32).scalar(0)
@@ -68,8 +68,8 @@
 
   :it "can't generate uniform floating-point values with an integer type"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: (
-        g.random_uniform!("example", @random!(g)
+      assert error: session.compute!(
+        g.random_uniform("example", @random!(g)
           Tensor(I32)
           Tensor.Shape.new([5, 3])
         )
@@ -78,8 +78,8 @@
 
   :it "can't generate uniform integer values with a floating-point type"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: (
-        g.random_uniform_integers!("example", @random!(g)
+      assert error: session.compute!(
+        g.random_uniform_integers("example", @random!(g)
           Tensor(F64)
           Tensor.Shape.new([5, 3])
         )
@@ -88,8 +88,8 @@
 
   :it "can't generate uniform bounded integer values with a floating-point type"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: (
-        g.random_uniform_bounded_integers!("example", @random!(g)
+      assert error: session.compute!(
+        g.random_uniform_bounded_integers("example", @random!(g)
           Tensor(F64)
           Tensor.Shape.new([5, 3])
           Tensor(F64).scalar(0)

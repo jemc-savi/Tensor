@@ -7,7 +7,7 @@
 :struct box Tensor.Op.Random.Uniform
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     algorithm Tensor.Gen.Random.Algorithm
     key
     counter
@@ -19,11 +19,11 @@
         .add_input(output_shape)
         .add_input(key)
         .add_input(counter)
-        .add_input(Tensor.Op.Const.new!(graph, "\(name).algorithm"
+        .add_input(Tensor.Op.Const.new(graph, "\(name).algorithm"
           Tensor(I32).scalar(algorithm.i32)
         ))
         .set_attr_type("dtype", output_type.element_type_code)
-        .finish!
+        .finish
     ))
 
 :: Generate pseudo-random integers in a uniform distribution, with values
@@ -35,7 +35,7 @@
 :struct box Tensor.Op.Random.Uniform.Integers
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     algorithm Tensor.Gen.Random.Algorithm
     key
     counter
@@ -47,11 +47,11 @@
         .add_input(output_shape)
         .add_input(key)
         .add_input(counter)
-        .add_input(Tensor.Op.Const.new!(graph, "\(name).algorithm"
+        .add_input(Tensor.Op.Const.new(graph, "\(name).algorithm"
           Tensor(I32).scalar(algorithm.i32)
         ))
         .set_attr_type("dtype", output_type.element_type_code)
-        .finish!
+        .finish
     ))
 
 :: Generate pseudo-random integers in a uniform distribution, bounded to a
@@ -63,7 +63,7 @@
 :struct box Tensor.Op.Random.Uniform.BoundedIntegers
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     algorithm Tensor.Gen.Random.Algorithm
     key
     counter
@@ -77,11 +77,11 @@
         .add_input(output_shape)
         .add_input(key)
         .add_input(counter)
-        .add_input(Tensor.Op.Const.new!(graph, "\(name).algorithm"
+        .add_input(Tensor.Op.Const.new(graph, "\(name).algorithm"
           Tensor(I32).scalar(algorithm.i32)
         ))
         .add_input(min_value)
         .add_input(max_value)
         .set_attr_type("dtype", output_type.element_type_code)
-        .finish!
+        .finish
     ))

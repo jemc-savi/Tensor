@@ -5,8 +5,8 @@
   :it "computes the softmax function of a vector (tensor rank 1)"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.softmax!("example"
-          g.const!("input", Tensor(F64).from_array([1, 2, 3, 4, 5]))
+        g.softmax("example"
+          g.const("input", Tensor(F64).from_array([1, 2, 3, 4, 5]))
         )
       )
 
@@ -21,9 +21,9 @@
 
   :it "complains when applied to a scalar (rank 0 tensor)"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: (
-        g.softmax!("example"
-          g.const!("input", Tensor(F64).scalar(99))
+      assert error: session.compute!(
+        g.softmax("example"
+          g.const("input", Tensor(F64).scalar(99))
         )
       )
     )
@@ -31,8 +31,8 @@
   :it "when applied to a higher rank, computes each inner row separately"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.softmax!("example"
-          g.const!("input"
+        g.softmax("example"
+          g.const("input"
             Tensor(F64).from_array([
               1, 2, 3
               1, 2, 0 // with implicit bias, this is equivalent to 2, 3, 1

@@ -20,7 +20,7 @@
   :: Seed a new pseudo-random source in the given graph, with the given seed.
   ::
   :: The seed must be a graph node output of type `Tensor(U32)` and shape `[2]`.
-  :fun non new!(
+  :fun non new(
     graph Tensor.Graph
     name String
     seed Tensor.Graph.CanOutput
@@ -30,29 +30,29 @@
     case algorithm == (
     | Tensor.Gen.Random.Algorithm.Philox |
       // TODO: Try to simplify this once I've got a test case up and running with it.
-      philox_scrambled = Tensor.Op.Random.Uniform.Integers.new!(
+      philox_scrambled = Tensor.Op.Random.Uniform.Integers.new(
         g.graph, "\(name).seed_scramble"
         algorithm
-        g.const!("\(name).seed_scramble.const", Tensor(U64).from_array([
+        g.const("\(name).seed_scramble.const", Tensor(U64).from_array([
           0x02461e293ec8f720
         ]))
-        g.cast!("\(name).seed_scramble.cast", seed, Tensor(U64))
+        g.cast("\(name).seed_scramble.cast", seed, Tensor(U64))
         Tensor(U32)
-        g.const!("\(name).seed_scramble.shape", Tensor(I32).from_array([4]))
+        g.const("\(name).seed_scramble.shape", Tensor(I32).from_array([4]))
       )
-      philox_key = g.reshape!("\(name).key.reshape"
-        g.bitcast!("\(name).key.bitcast"
-          g.slice!("\(name).key.slice", philox_scrambled, [0], Tensor.Shape.new([2]))
+      philox_key = g.reshape("\(name).key.reshape"
+        g.bitcast("\(name).key.bitcast"
+          g.slice("\(name).key.slice", philox_scrambled, [0], Tensor.Shape.new([2]))
           Tensor(U64)
         )
         Tensor.Shape.new([1])
       )
-      philox_base_counter = g.pack!("\(name).counter", [
-        g.const!("\(name).counter.zero"
+      philox_base_counter = g.pack("\(name).counter", [
+        g.const("\(name).counter.zero"
           Tensor(U64).scalar(0)
         )
-        g.bitcast!("\(name).counter.bitcast"
-          g.slice!("\(name).counter.slice", philox_scrambled, [2], Tensor.Shape.new([2]))
+        g.bitcast("\(name).counter.bitcast"
+          g.slice("\(name).counter.slice", philox_scrambled, [2], Tensor.Shape.new([2]))
           Tensor(U64)
         )
       ])
@@ -71,24 +71,23 @@
         graph
         name
         algorithm
-        Tensor.Op.Bitcast.new!(g.graph, "\(name).key"
-          Tensor.Op.Cast.new!(g.graph, "\(name).seed.cast"
+        Tensor.Op.Bitcast.new(g.graph, "\(name).key"
+          Tensor.Op.Cast.new(g.graph, "\(name).seed.cast"
             seed
             Tensor(U32)
           )
           Tensor(U64)
         )
-        Tensor.Op.Const.new!(g.graph, "\(name).counter"
+        Tensor.Op.Const.new(g.graph, "\(name).counter"
           Tensor(U64).from_array([0])
         )
       )
     |
-      g.graph.errors << Tensor.Graph.Error.new(
+      invalid = Tensor.Graph.Operation._new_invalid(graph, name, Tensor.Graph.Error.new(
         Tensor.Graph.Error.Code.InvalidArgument
         "PRNG algorithm \(algorithm) has no seeding system implemented for it"
-      )
-
-      error!
+      )).output(0)
+      @_new(graph, name, algorithm, invalid, invalid)
     )
 
   :: Get a counter graph output suitable for use in pseudo-random generation,
@@ -100,7 +99,7 @@
   :: This is what ensures that different graph nodes that use the same random
   :: source will get distinct values when generating (but those distinct
   :: values will still be deterministic based on the seed and graph layout).
-  :fun ref use_counter!(reserve_count U64)
+  :fun ref use_counter(reserve_count U64)
     g = Tensor.Graph.Helper.new(@_graph)
 
     // TODO: Why does TensorFlow use 256? Can we justify it explicitly?
@@ -117,9 +116,9 @@
     // taking `add([0, offset])` or `add([1, offset])` based on whether the
     // former has a result whose second index is greater than that index
     // of the original tensor value prior to adding.
-    g.add!(name
+    g.add(name
       @_base_counter
-      g.const!("\(name).const"
+      g.const("\(name).const"
         if (@algorithm == Tensor.Gen.Random.Algorithm.Philox) (
           Tensor(U64).from_array([0, offset])
         |

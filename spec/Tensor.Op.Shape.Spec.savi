@@ -5,8 +5,8 @@
   :it "emits the shape of the input tensor"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.shape!("shape"
-          g.const!("input", Tensor(F64).from_array([1, 2, 3, 4, 5, 6]).reshape!(Tensor.Shape.new([2, 3])))
+        g.shape("shape"
+          g.const("input", Tensor(F64).from_array([1, 2, 3, 4, 5, 6]).try_reshape(Tensor.Shape.new([2, 3])))
         )
       )
 

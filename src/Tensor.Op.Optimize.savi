@@ -6,7 +6,7 @@
 :struct box Tensor.Op.Optimize.GradientDescent
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     gradient Tensor.Graph.CanOutput
     var Tensor.Op.Variable
     learning_rate Tensor.Graph.CanOutput
@@ -16,7 +16,7 @@
         .add_input(var.reference)
         .add_input(learning_rate)
         .add_input(gradient)
-        .finish!
+        .finish
     ))
 
 // TODO: Tensor.Op.Optimize.AdaMax                  => ApplyAdaMax

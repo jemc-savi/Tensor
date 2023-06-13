@@ -7,7 +7,7 @@
 :: The given axis must be a rank-0 tensor (i.e. a scalar).
 :struct box Tensor.Op.Concat
   :is Tensor.Op
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     inputs Array(Tensor.Graph.CanOutput)'box
     axis
   )
@@ -16,5 +16,5 @@
         .add_input_list(inputs)
         .add_input(axis)
         .set_attr_i64("N", inputs.size.i64)
-        .finish!
+        .finish
     ))

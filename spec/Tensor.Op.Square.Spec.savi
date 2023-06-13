@@ -5,8 +5,8 @@
   :it "computes arithmetic squares"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.square!("example"
-          g.const!("input", Tensor(I32).from_array([1, -2, 3, -4]))
+        g.square("example"
+          g.const("input", Tensor(I32).from_array([1, -2, 3, -4]))
         )
       )
 

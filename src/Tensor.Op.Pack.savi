@@ -8,7 +8,7 @@
 :: the new shape. Raises an error if `axis` is greater than the inputs' rank.
 :struct box Tensor.Op.Pack
   :is Tensor.Op
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     inputs Array(Tensor.Graph.CanOutput)'box
     axis USize = 0
   )
@@ -16,5 +16,5 @@
       builder
         .add_input_list(inputs)
         .set_attr_i64("axis", axis.i64)
-        .finish!
+        .finish
     ))

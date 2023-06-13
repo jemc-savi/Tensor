@@ -5,8 +5,8 @@
   :it "slices a contiguous portion of the input tensor"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.slice!("example"
-          g.const!("input"
+        g.slice("example"
+          g.const("input"
             Tensor(F64).from_array([
               10, 11, 12, 13, 14
               15, 16, 17, 18, 19
@@ -39,11 +39,11 @@
       ]
     ))
 
-  :it "complains on session compute if the output shape is out of bounds"
+  :it "complains if the output shape is out of bounds"
     _WithGraphHelper.run(@env, False) -> (g, session |
       assert error: session.compute!(
-        g.slice!("example"
-          g.const!("input"
+        g.slice("example"
+          g.const("input"
             Tensor(F64).from_array([
               10, 11, 12, 13, 14
               15, 16, 17, 18, 19

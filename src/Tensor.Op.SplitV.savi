@@ -18,7 +18,7 @@
   :: Get (by index) one of the slices emitted by this operation.
   :fun output_slice(index): @op.output(index)
 
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     input
     split_axis
     slice_sizes
@@ -30,5 +30,5 @@
         .add_input(slice_sizes)
         .add_input(split_axis)
         .set_attr_i64("num_split", slice_sizes_count.i64)
-        .finish!
+        .finish
     ))
