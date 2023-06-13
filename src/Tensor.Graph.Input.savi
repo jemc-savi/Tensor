@@ -3,14 +3,18 @@
   :let index USize
   :new box (@op, @index)
 
-  :fun _to_ffi
+  :fun _to_ffi!
     _FFI.Input._new(@op._ptr, @index.i32)
 
   :fun source
-    Tensor.Graph.Output._from_ffi_in_graph(
-      // TODO: Remove this cap-hacking cast:
-      _FFI.Cast(Tensor.Graph'box, Tensor.Graph).pointer(@op.graph)
-      @_to_ffi.source
+    try (
+      Tensor.Graph.Output._from_ffi_in_graph(
+        // TODO: Remove this cap-hacking cast:
+        _FFI.Cast(Tensor.Graph'box, Tensor.Graph).pointer(@op.graph)
+        @_to_ffi!.source
+      )
+    |
+      Tensor.Graph.Output.new(@op, USize.max_value) // (invalid output)
     )
 
   :fun with_value(value): Tensor.Graph.Input.WithValue.new(@, value)

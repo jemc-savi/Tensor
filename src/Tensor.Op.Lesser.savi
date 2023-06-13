@@ -8,8 +8,8 @@
 :struct box Tensor.Op.Lesser
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name, x, y, or_equal = False)
+  :fun non new(graph Tensor.Graph, name, x, y, or_equal = False)
     op_name = if or_equal ("LessEqual" | "Less")
     @_new(graph.new_operation(op_name, name) -> (builder |
-      builder.add_input(x).add_input(y).finish!
+      builder.add_input(x).add_input(y).finish
     ))

@@ -6,9 +6,12 @@
 
   // No need for a finalizer - memory for this `_ptr` is owned by `graph._ptr`
 
+  :fun is_valid: @_ptr.is_not_null
+
   :fun input(index): Tensor.Graph.Input.new(@, index) // TODO: partial?
   :fun output(index): Tensor.Graph.Output.new(@, index) // TODO: partial?
-  :fun output_count: @_ffi.get_num_outputs(@_ptr).usize
+  :fun output_count
+    if @_ptr.is_null (USize.max_value | @_ffi.get_num_outputs(@_ptr).usize)
 
   :new box _new(@graph, @name, @_ptr)
 
@@ -17,6 +20,13 @@
     name_len = _FFI.strlen(name_ptr).usize
     name = String.val_from_cpointer(name_ptr, name_len, name_len)
     @_new(graph, name, ptr)
+
+  :fun non _new_invalid(graph Tensor.Graph, name, error Tensor.Graph.Error)
+    graph.errors << error
+    @_new(graph, name, CPointer(_FFI.Operation).null)
+
+  :fun non _new_invalid_already_captured_error(graph, name)
+    @_new(graph, name, CPointer(_FFI.Operation).null)
 
 :class Tensor.Graph.Operation.Builder
   :fun non _ffi: _FFI.Operation.Builder
@@ -33,13 +43,17 @@
 
   :fun ref add_input(can_output Tensor.Graph.CanOutput)
     return @ if @_ptr.is_null
-    @_ffi.add_input(@_ptr, can_output.output._to_ffi)
+    try (
+      @_ffi.add_input(@_ptr, can_output.output._to_ffi!)
+    |
+      @_ptr = @_ptr.null
+    )
     @
 
   :fun ref add_input_list(can_outputs Array(Tensor.Graph.CanOutput)'box)
     return @ if @_ptr.is_null
     outputs = Array(_FFI.Output).new(can_outputs.size)
-    can_outputs.each -> (can_output | outputs << can_output.output._to_ffi)
+    can_outputs.each -> (can_output | try (outputs << can_output.output._to_ffi!))
     @_ffi.add_input_list(@_ptr, outputs.cpointer, outputs.size.i32)
     @
 
@@ -90,7 +104,7 @@
     )
     @
 
-  :fun ref set_attr_tensor!(attr_name String, value Tensor.Any) // TODO: what is the right cap for Tensor?
+  :fun ref set_attr_tensor(attr_name String, value Tensor.Any) // TODO: what is the right cap for Tensor?
     return @ if @_ptr.is_null
     @_ffi.set_attr_tensor(
       @_ptr
@@ -98,14 +112,24 @@
       value._ptr
       @graph._status_ptr
     )
-    @graph._check_status!
+    try (
+      @graph._check_status!
+    |
+      @_ptr = @_ptr.null
+    )
     @
 
-  :fun ref finish!
-    operation_ptr = @_ffi.finish(@_ptr, @graph._status_ptr)
-    @_ptr = @_ptr.null
-    @graph._check_status!
-    Tensor.Graph.Operation._new(@graph, @_name, operation_ptr)
+  :fun ref finish
+    try (
+      if @_ptr.is_null error!
+      operation_ptr = @_ffi.finish(@_ptr, @graph._status_ptr)
+      @graph._check_status!
+      @_ptr = @_ptr.null
+      Tensor.Graph.Operation._new(@graph, @_name, operation_ptr)
+    |
+      @_ptr = @_ptr.null
+      Tensor.Graph.Operation._new_invalid_already_captured_error(@graph, @_name)
+    )
 
 
 :module _FFI.Operation

@@ -5,8 +5,8 @@
   :it "emits a variation on the tensor which has a changed shape"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.reshape!("example"
-          g.const!("input", Tensor(F64).from_array([1, 2, 3, 4, 5, 6]))
+        g.reshape("example"
+          g.const("input", Tensor(F64).from_array([1, 2, 3, 4, 5, 6]))
           Tensor.Shape.new([2, 3])
         )
       )
@@ -18,8 +18,8 @@
   :it "can use -1 to indicate 'all remaining size' in the output shape"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.reshape!("example"
-          g.const!("input", Tensor(F64).from_array([1, 2, 3, 4, 5, 6]))
+        g.reshape("example"
+          g.const("input", Tensor(F64).from_array([1, 2, 3, 4, 5, 6]))
           Tensor.Shape.new([-1, 3])
         )
       )
@@ -30,8 +30,10 @@
 
   :it "complains when the requested shape doesn't align with the current size"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: g.reshape!("example"
-        g.const!("input", Tensor(F64).from_array([1, 2, 3, 4, 5, 6, 7, 8]))
-        Tensor.Shape.new([2, 3])
+      assert error: session.compute!(
+        g.reshape("example"
+          g.const("input", Tensor(F64).from_array([1, 2, 3, 4, 5, 6, 7, 8]))
+          Tensor.Shape.new([2, 3])
+        )
       )
     )

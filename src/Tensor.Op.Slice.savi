@@ -7,7 +7,7 @@
 :: with the same number of elements as the total dimension count of the input.
 :struct box Tensor.Op.Slice
   :is Tensor.Op
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     input
     begin_indices
     output_shape
@@ -17,5 +17,5 @@
         .add_input(input)
         .add_input(begin_indices)
         .add_input(output_shape)
-        .finish!
+        .finish
     ))

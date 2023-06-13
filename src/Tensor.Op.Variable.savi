@@ -2,7 +2,7 @@
 :struct box Tensor.Op.Variable
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     output_type Tensor.Any'non
     output_shape
   )
@@ -10,7 +10,7 @@
       builder
         .set_attr_type("dtype", output_type.element_type_code)
         .set_attr_shape("shape", output_shape)
-        .finish!
+        .finish
     )
     reference = graph.new_operation("VariableV2", name) -> (builder |
       builder
@@ -18,18 +18,18 @@
         .set_attr_shape("shape", output_shape)
         // TODO: add support for non-default `container` attr?
         // TODO: add support for non-default `shared_name` attr?
-        .finish!
+        .finish
     )
     initial_assign = graph.new_operation("Assign", "\(name).assign_initial_value") -> (builder |
       builder
         .add_input(reference.output(0))
         .add_input(placeholder.output(0))
-        .finish!
+        .finish
     )
     initial_snapshot = graph.new_operation("Identity", "\(name).initial_snapshot") -> (builder |
       builder
         .add_input(initial_assign.output(0))
-        .finish!
+        .finish
     )
     @_new(initial_snapshot)
 
@@ -59,7 +59,7 @@
 // :struct box Tensor.Op.Variable.Assign
 //   :is Tensor.Op
 
-//   :fun non new!(graph Tensor.Graph, name
+//   :fun non new(graph Tensor.Graph, name
 //     var Tensor.Op.Variable
 //     from Tensor.Graph.CanOutput
 //   )
@@ -69,18 +69,18 @@
 //         .add_input(from)
 //         // TODO: add support for disabling `validate_shape` attr?
 //         // TODO: add support for disabling `use_locking` attr?
-//         .finish!
+//         .finish
 //     ))
 
 // // TODO: Documentation
 // :struct box Tensor.Op.Variable.Read
 //   :is Tensor.Op
 
-//   :fun non new!(graph Tensor.Graph, name, var Tensor.Op.Variable)
+//   :fun non new(graph Tensor.Graph, name, var Tensor.Op.Variable)
 //     @_new(graph.new_operation("Identity", name) -> (builder |
 //       builder
 //         .add_input(var)
 //         // TODO: add support for disabling `validate_shape` attr?
 //         // TODO: add support for disabling `use_locking` attr?
-//         .finish!
+//         .finish
 //     ))

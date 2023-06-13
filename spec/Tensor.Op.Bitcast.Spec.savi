@@ -5,8 +5,8 @@
   :it "distributes bits into a larger number of narrower elements"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.bitcast!("example"
-          g.const!("input", Tensor(U16).from_array([0x0246, 0x8ace]))
+        g.bitcast("example"
+          g.const("input", Tensor(U16).from_array([0x0246, 0x8ace]))
           Tensor(U8)
         )
       )
@@ -18,8 +18,8 @@
   :it "consolidates bits into a smaller number of wider elements"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.bitcast!("example"
-          g.const!("input", Tensor(U8).from_array([0x46, 0x02, 0xce, 0x8a])
+        g.bitcast("example"
+          g.const("input", Tensor(U8).from_array([0x46, 0x02, 0xce, 0x8a])
               .try_reshape(Tensor.Shape.new([2, 2]))
           )
           Tensor(U16)
@@ -31,10 +31,12 @@
 
   :it "complains on narrow to wide with more than one wide result per row"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: g.bitcast!("example"
-        g.const!("input", Tensor(U8).from_array([0x46, 0x02, 0xce, 0x8a])
-          // this would work if we did a reshape like: [2, 2]
+      assert error: session.compute!(
+        g.bitcast("example"
+          g.const("input", Tensor(U8).from_array([0x46, 0x02, 0xce, 0x8a])
+            // this would work if we did a reshape like: [2, 2]
+          )
+          Tensor(U16)
         )
-        Tensor(U16)
       )
     )

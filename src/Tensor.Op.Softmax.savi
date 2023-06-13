@@ -51,11 +51,11 @@
 :struct box Tensor.Op.Softmax
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     logits
   )
     @_new(graph.new_operation("Softmax", name) -> (builder |
       builder
         .add_input(logits)
-        .finish!
+        .finish
     ))

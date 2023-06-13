@@ -20,7 +20,7 @@
 ::
 :struct box Tensor.Op.Cast
   :is Tensor.Op
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     input
     output_type Tensor.Any'non
     truncate = False
@@ -31,5 +31,5 @@
         // TODO: SrcT?
         .set_attr_type("DstT", output_type.element_type_code)
         .set_attr_bool("Truncate", truncate)
-        .finish!
+        .finish
     ))

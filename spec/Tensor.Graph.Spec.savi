@@ -8,38 +8,38 @@
 
     graph = Tensor.Graph.new
     session = Tensor.Graph.Session.new(graph)
+
+    a = graph.new_operation("Const", "a") -> (builder |
+      builder
+        .set_attr_type("dtype", Tensor(F64).element_type_code)
+        .set_attr_tensor("value", a_value)
+        .finish
+    )
+
+    assert: a.output(0).shape.rank == 2
+    assert: a.output(0).shape.into_array == [2, 2]
+
+    b = graph.new_operation("Const", "b") -> (builder |
+      builder
+        .set_attr_type("dtype", Tensor(F64).element_type_code)
+        .set_attr_tensor("value", b_value)
+        .finish
+    )
+    product1 = graph.new_operation("MatMul", "product1") -> (builder |
+      builder
+        .add_input(a.output(0))
+        .add_input(b.output(0))
+        .finish
+    )
+    product2 = graph.new_operation("MatMul", "product2") -> (builder |
+      builder
+        .add_input(a.output(0))
+        .add_input(b.output(0))
+        .set_attr_bool("transpose_a", True)
+        .finish
+    )
+
     try (
-      a = graph.new_operation("Const", "a") -> (builder |
-        builder
-          .set_attr_type("dtype", Tensor(F64).element_type_code)
-          .set_attr_tensor!("value", a_value)
-          .finish!
-      )
-
-      assert: a.output(0).shape.rank == 2
-      assert: a.output(0).shape.into_array == [2, 2]
-
-      b = graph.new_operation("Const", "b") -> (builder |
-        builder
-          .set_attr_type("dtype", Tensor(F64).element_type_code)
-          .set_attr_tensor!("value", b_value)
-          .finish!
-      )
-      product1 = graph.new_operation("MatMul", "product1") -> (builder |
-        builder
-          .add_input(a.output(0))
-          .add_input(b.output(0))
-          .finish!
-      )
-      product2 = graph.new_operation("MatMul", "product2") -> (builder |
-        builder
-          .add_input(a.output(0))
-          .add_input(b.output(0))
-          .set_attr_bool("transpose_a", True)
-          .finish!
-      )
-
-
       result = session.compute!(product1.output(0))
       assert: result.as!(Tensor(F64)).into_array == [
         1.0 * 5.0 + 2.0 * 7.0, 1.0 * 6.0 + 2.0 * 8.0 // row1⋅col1, row1⋅col2
@@ -61,25 +61,27 @@
       assert no_error: error!
     )
 
-  :it "complains when creating an operation with an invalid type"
+  :it "complains when evaluating an operation with an invalid type"
     g = Tensor.Graph.new
-    assert error: (
+    session = Tensor.Graph.Session.new(g)
+
+    assert error: session.compute!(
       g.new_operation("Bogus", "example") -> (builder |
-        builder.finish!
-      )
+        builder.finish
+      ).output(0)
     )
     assert: g.errors.first!.code == Tensor.Graph.Error.Code.InvalidArgument
     assert: g.errors.first!.message.includes("Op type not registered 'Bogus'")
 
   :it "optimizes to minimize a loss function with gradient descent"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
-      learning_rate = g.const!("learning_rate", Tensor(F64).scalar(0.25))
+      learning_rate = g.const("learning_rate", Tensor(F64).scalar(0.25))
 
-      x = g.variable!("x", Tensor(F64), [])
-      loss = g.square!("square", x)
+      x = g.variable("x", Tensor(F64), [])
+      loss = g.square("square", x)
       grad = g.graph.add_gradients!([loss], [x]).first!
 
-      x2 = g.apply_gradient_descent!("apply_grad", grad, x, learning_rate)
+      x2 = g.apply_gradient_descent("apply_grad", grad, x, learning_rate)
 
       result Tensor.Any = Tensor(F64).scalar(5)
       [

@@ -8,9 +8,9 @@
   :it "computes matrix multiplication"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.matmul!("example"
-          g.const!("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
-          g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        g.matmul("example"
+          g.const("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
+          g.const("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
         )
       )
 
@@ -23,9 +23,9 @@
   :it "computes matrix multiplication with the first matrix transposed"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.matmul_with_a_transposed!("example"
-          g.const!("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
-          g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        g.matmul_with_a_transposed("example"
+          g.const("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
+          g.const("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
         )
       )
 
@@ -38,9 +38,9 @@
   :it "computes matrix multiplication with the second matrix transposed"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.matmul_with_b_transposed!("example"
-          g.const!("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
-          g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        g.matmul_with_b_transposed("example"
+          g.const("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
+          g.const("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
         )
       )
 
@@ -53,9 +53,9 @@
   :it "computes matrix multiplication with both matrices transposed"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.matmul_with_both_transposed!("example"
-          g.const!("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
-          g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        g.matmul_with_both_transposed("example"
+          g.const("A", @f64_2x2(1.0, 2.0, 3.0, 4.0))
+          g.const("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
         )
       )
 
@@ -67,24 +67,30 @@
 
   :it "complains when one of the inputs is a scalar (rank 0 tensor)"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: g.matmul!("example"
-        g.const!("A", Tensor(F64).scalar(99))
-        g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+      assert error: session.compute!(
+        g.matmul("example"
+          g.const("A", Tensor(F64).scalar(99))
+          g.const("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        )
       )
     )
 
   :it "complains when one of the inputs is a vector (rank 1 tensor)"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: g.matmul!("example"
-        g.const!("A", Tensor(F64).from_array([1, 2, 3, 4]))
-        g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+      assert error: session.compute!(
+        g.matmul("example"
+          g.const("A", Tensor(F64).from_array([1, 2, 3, 4]))
+          g.const("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        )
       )
     )
 
   :it "complains when one of the inputs has a rank higher 2"
     _WithGraphHelper.run(@env, False) -> (g, session |
-      assert error: g.matmul!("example"
-        g.const!("A", @f64_2x2(1.0, 2.0, 3.0, 4.0).try_reshape(Tensor.Shape.new([2, 1, 2])))
-        g.const!("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+      assert error: session.compute!(
+        g.matmul("example"
+          g.const("A", @f64_2x2(1.0, 2.0, 3.0, 4.0).try_reshape(Tensor.Shape.new([2, 1, 2])))
+          g.const("B", @f64_2x2(5.0, 6.0, 7.0, 8.0))
+        )
       )
     )

@@ -5,7 +5,7 @@
   :it "emits a constant tensor value"
     _WithGraphHelper.run(@env) -> (g, session | assert no_error: (
       result = session.compute!(
-        g.const!("example"
+        g.const("example"
           Tensor(F64).from_array([1, 2, 3, 4])
         )
       )

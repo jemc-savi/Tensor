@@ -14,10 +14,10 @@
 :struct box Tensor.Op.Add
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name, x, y)
+  :fun non new(graph Tensor.Graph, name, x, y)
     @_new(graph.new_operation("AddV2", name) -> (builder |
       builder
         .add_input(x)
         .add_input(y)
-        .finish!
+        .finish
     ))

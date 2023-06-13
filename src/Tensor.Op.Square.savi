@@ -2,9 +2,9 @@
 :struct box Tensor.Op.Square
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name, input)
+  :fun non new(graph Tensor.Graph, name, input)
     @_new(graph.new_operation("Square", name) -> (builder |
       builder
         .add_input(input)
-        .finish!
+        .finish
     ))

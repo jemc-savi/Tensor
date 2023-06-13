@@ -50,12 +50,12 @@
     input_ffis = Array(_FFI.Input).new(inputs.size)
     input_tensor_ptrs = Array(CPointer(_FFI.Tensor)).new(inputs.size)
     inputs.each -> (input |
-      input_ffis << input.input._to_ffi
+      input_ffis << input.input._to_ffi!
       input_tensor_ptrs << input.value._ptr
     )
 
     output = can_output.output
-    output_ffi = output._to_ffi
+    output_ffi = output._to_ffi!
     target_op_ptr = output.op._ptr
     output_tensor_ptr = CPointer(_FFI.Tensor).null
 
@@ -93,7 +93,7 @@
     input_ffis = Array(_FFI.Input).new(inputs.size)
     input_tensor_ptrs = Array(CPointer(_FFI.Tensor)).new(inputs.size)
     inputs.each -> (input |
-      input_ffis << input.input._to_ffi
+      input_ffis << input.input._to_ffi!
       input_tensor_ptrs << input.value._ptr
     )
 
@@ -101,7 +101,7 @@
     output_tensor_ptrs = Array(CPointer(_FFI.Tensor)).new(outputs.size)
     target_op_ptrs = Array(CPointer(_FFI.Operation)).new(outputs.size)
     outputs.each -> (output |
-      output_ffis << output._to_ffi
+      output_ffis << output._to_ffi!
       output_tensor_ptrs << CPointer(_FFI.Tensor).null
       target_op_ptrs << output.op._ptr
     )
@@ -113,12 +113,12 @@
       // Inputs
       input_ffis.cpointer
       input_tensor_ptrs.cpointer
-      inputs.size.i32
+      input_ffis.size.i32
 
       // Outputs
       output_ffis.cpointer
       output_tensor_ptrs.cpointer
-      outputs.size.i32
+      output_ffis.size.i32
 
       // Target Operations
       target_op_ptrs.cpointer

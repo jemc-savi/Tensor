@@ -46,7 +46,7 @@
 :struct box Tensor.Op.MatMul
   :is Tensor.Op
 
-  :fun non new!(graph Tensor.Graph, name
+  :fun non new(graph Tensor.Graph, name
     a
     b
     transpose_a Bool = False
@@ -58,5 +58,5 @@
         .add_input(b)
         .set_attr_bool("transpose_a", transpose_a)
         .set_attr_bool("transpose_b", transpose_b)
-        .finish!
+        .finish
     ))
