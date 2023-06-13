@@ -1,0 +1,86 @@
+:struct Tensor.Shape
+  :let _array (Array(I64) | None)
+
+  :new unknown: @_array = None
+  :new scalar: @_array = []
+  :new (@_array)
+
+  :fun rank I32: try (@_array.not!(None).size.i32! | -1)
+
+  :fun is_unknown: @rank < 0
+  :fun is_scalar: @rank == 0
+  :fun is_vector: @rank == 1
+  :fun is_matrix: @rank == 2
+  :fun is_unresolved
+    try (
+      @_array.not!(None).has_any -> (dimension | dimension < 0)
+    |
+      True
+    )
+
+  :: Return the total count of elements. Raises an error if the shape is
+  :: unknown, or if any of the individual dimensions in the shape are unknown.
+  :fun total_count! USize
+    total_count USize = 0
+    @_array.not!(None).each -> (dimension | total_count += dimension.usize!)
+    total_count
+
+  :fun to_tensor Tensor(I64)
+    array = try (@_array.not!(None) | return Tensor(I64).scalar(-1))
+    Tensor(I64).generate(array.size) -> (index | try (array[index]! | -1))
+
+  :fun into_array(out Array(I64) = [])
+    array = try (@_array.not!(None) | return out)
+    array.each -> (dimension | out << dimension)
+    out
+
+  :fun into_string_space
+    array = try (@_array.not!(None) |
+      return "<unknown>".size
+    )
+
+    space USize = 0
+    array.each -> (dimension | space += dimension.into_string_space + 2)
+    try (space = space -! 2)
+    space
+
+  :fun into_string(out String'ref)
+    array = try (@_array.not!(None) |
+      out << "<unknown>"
+      return
+    )
+
+    out << "["
+    array.each_with_index -> (dimension, i |
+      if (i > 0) (out << ", ")
+      dimension.into_string(out)
+    )
+    out << "]"
+
+  :is Indexable(I64)
+  :fun "[]!"(index USize): @_array.not!(None)[index]!
+
+  :fun each_with_index(
+    from USize = 0
+    to = USize.max_value
+    stride USize = 1
+  ) None
+    try (
+      @_array.not!(None).each_with_index(from, to, stride) -> (dimension, i |
+        yield (dimension, i)
+      )
+    )
+
+  :fun reverse_each_with_index(
+    from = USize.max_value
+    to USize = 0
+    stride USize = 1
+  ) None
+    try (
+      @_array.not!(None).reverse_each_with_index(from, to, stride) -> (dimension, i |
+        yield (dimension, i)
+      )
+    )
+
+  :fun first!: @_array.not!(None).first!
+  :fun last!: @_array.not!(None).last!

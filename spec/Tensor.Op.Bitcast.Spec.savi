@@ -20,7 +20,7 @@
       result = session.compute!(
         g.bitcast!("example"
           g.const!("input", Tensor(U8).from_array([0x46, 0x02, 0xce, 0x8a])
-              .try_reshape([2, 2])
+              .try_reshape(Tensor.Shape.new([2, 2]))
           )
           Tensor(U16)
         )
@@ -33,7 +33,7 @@
     _WithGraphHelper.run(@env, False) -> (g, session |
       assert error: g.bitcast!("example"
         g.const!("input", Tensor(U8).from_array([0x46, 0x02, 0xce, 0x8a])
-          // this would work if we did a reshape like: .try_reshape([2, 2])
+          // this would work if we did a reshape like: [2, 2]
         )
         Tensor(U16)
       )

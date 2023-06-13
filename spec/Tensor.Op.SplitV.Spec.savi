@@ -21,7 +21,7 @@
             55, 56, 57, 58, 59
             60, 61, 62, 63, 64
             65, 66, 67, 68, 69
-          ]).try_reshape([3, 4, 5])
+          ]).try_reshape(Tensor.Shape.new([3, 4, 5]))
         )
         2
         [1, -1, 2]
@@ -102,7 +102,7 @@
             55, 56, 57, 58, 59
             60, 61, 62, 63, 64
             65, 66, 67, 68, 69
-          ]).try_reshape([3, 4, 5])
+          ]).try_reshape(Tensor.Shape.new([3, 4, 5]))
         )
         3 // out of bounds
         [-1]
@@ -128,7 +128,7 @@
             55, 56, 57, 58, 59
             60, 61, 62, 63, 64
             65, 66, 67, 68, 69
-          ]).try_reshape([3, 4, 5])
+          ]).try_reshape(Tensor.Shape.new([3, 4, 5]))
         )
         2
         [1, 2, 1] // sum is 4 but sum of 5 is expected
@@ -154,7 +154,7 @@
             55, 56, 57, 58, 59
             60, 61, 62, 63, 64
             65, 66, 67, 68, 69
-          ]).try_reshape([3, 4, 5])
+          ]).try_reshape(Tensor.Shape.new([3, 4, 5]))
         )
         2
         [2, 2, 2] // sum is 6 but sum of 5 is expected

@@ -42,7 +42,7 @@
 
               7, 8, 9 // and this is also equivalent to 1, 2, 3
               7, 8, 0 // and this 0 is even father from 7 & 8
-            ]).try_reshape([3, 2, 3])
+            ]).try_reshape(Tensor.Shape.new([3, 2, 3]))
           )
         )
       )

@@ -75,27 +75,21 @@
     )
     @from_array(elements)
 
-  :fun ref try_reshape(dimensions): try (@reshape!(dimensions) | @)
-  :fun ref reshape!(dimensions Array(USize))
+  :fun ref try_reshape(shape): try (@reshape!(shape) | @)
+  :fun ref reshape!(shape Tensor.Shape'box)
+    error! if shape.is_unknown
+    error! if shape.is_unresolved
+
     element_count USize = 1
-    dimensions.each -> (dimension_size |
-      element_count = element_count * dimension_size.usize
+    shape.each -> (dimension |
+      element_count = element_count * dimension.usize
     )
     error! unless (element_count == @element_count)
 
-    dimensions_i64_ptr =
-      if (USize.byte_width == I64.byte_width) (
-        _FFI.Cast(CPointer(USize), CPointer(I64)).pointer(dimensions.cpointer)
-      |
-        dimensions_i64 Array(I64) = []
-        dimensions.each -> (size | dimensions_i64 << size.i64)
-        dimensions_i64.cpointer
-      )
-
     @_ffi.set_shape(
       @_ptr
-      dimensions_i64_ptr
-      dimensions.size.i32
+      try (shape._array.not!(None).cpointer | CPointer(I64).null)
+      shape.rank
     )
     @
 
