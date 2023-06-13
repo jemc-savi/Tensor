@@ -7,6 +7,29 @@
   :fun graph @->(Tensor.Graph)
 
   ///
+  // Error-related convenience methods
+
+  :fun ref error_invalid_argument!(message) None
+    @graph.errors << Tensor.Graph.Error.new(
+      Tensor.Graph.Error.Code.InvalidArgument, message
+    )
+
+  :fun ref error_out_of_range!(message) None
+    @graph.errors << Tensor.Graph.Error.new(
+      Tensor.Graph.Error.Code.OutOfRange, message
+    )
+
+  :fun ref error_not_found!(message) None
+    @graph.errors << Tensor.Graph.Error.new(
+      Tensor.Graph.Error.Code.NotFound, message
+    )
+
+  :fun ref error_unimplemented!(message) None
+    @graph.errors << Tensor.Graph.Error.new(
+      Tensor.Graph.Error.Code.Unimplemented, message
+    )
+
+  ///
   // Value Sources
 
   :fun ref const!(name, value)
@@ -36,11 +59,9 @@
   :fun ref random_uniform!(name
     gen_random Tensor.Gen.Random
     output_type
-    output_shape Array(USize)
+    output_shape Tensor.Shape'box
   )
-    output_shape_tensor = Tensor(I64).generate(output_shape.size) -> (i |
-      output_shape[i]!.i64
-    )
+    output_shape_tensor = output_shape.to_tensor
     Tensor.Op.Random.Uniform.new!(@graph, name
       gen_random.algorithm
       gen_random.key
@@ -52,11 +73,9 @@
   :fun ref random_uniform_integers!(name
     gen_random Tensor.Gen.Random
     output_type
-    output_shape Array(USize)
+    output_shape Tensor.Shape'box
   )
-    output_shape_tensor = Tensor(I64).generate(output_shape.size) -> (i |
-      output_shape[i]!.i64
-    )
+    output_shape_tensor = output_shape.to_tensor
     Tensor.Op.Random.Uniform.Integers.new!(@graph, name
       gen_random.algorithm
       gen_random.key
@@ -68,13 +87,11 @@
   :fun ref random_uniform_bounded_integers!(name
     gen_random Tensor.Gen.Random
     output_type
-    output_shape Array(USize)
+    output_shape Tensor.Shape'box
     min_val Tensor.Any
     max_val Tensor.Any
   )
-    output_shape_tensor = Tensor(I64).generate(output_shape.size) -> (i |
-      output_shape[i]!.i64
-    )
+    output_shape_tensor = output_shape.to_tensor
     Tensor.Op.Random.Uniform.BoundedIntegers.new!(@graph, name
       gen_random.algorithm
       gen_random.key
@@ -142,13 +159,9 @@
   :fun ref shape!(name, input)
     Tensor.Op.Shape.new!(@graph, name, input)
 
-  :fun ref reshape!(name, input, output_shape Array(USize))
+  :fun ref reshape!(name, input, output_shape Tensor.Shape'box)
     Tensor.Op.Reshape.new!(@graph, name, input
-      @const!("\(name).new_shape"
-        Tensor(I64).generate(output_shape.size) -> (index |
-          output_shape[index]!.i64
-        )
-      )
+      @const!("\(name).new_shape", output_shape.to_tensor)
     )
 
   :fun ref reshape_dynamic!(name, input, output_shape)
@@ -174,15 +187,13 @@
     name
     input
     begin_indices Array(USize)
-    output_shape Array(USize)
+    output_shape Tensor.Shape'box
   )
     @slice_dynamic!(name, input
       @const!("\(name).begin_indices"
         Tensor(I64).generate(begin_indices.size) -> (i | begin_indices[i]!.i64)
       )
-      @const!("\(name).output_shape"
-        Tensor(I64).generate(output_shape.size) -> (i | output_shape[i]!.i64)
-      )
+      @const!("\(name).output_shape", output_shape.to_tensor)
     )
 
   :fun ref slice_dynamic!(name, input, begin_indices, output_shape)

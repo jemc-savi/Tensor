@@ -53,7 +53,7 @@
       assert error: g.logical_and!("example"
         g.const!("x", Tensor(Bool).from_array([True, True, False, False]))
         g.const!("y", Tensor(Bool).from_array([True, False, True, False])
-            .try_reshape([2, 2])
+            .try_reshape(Tensor.Shape.new([2, 2]))
         )
       )
     )
@@ -91,7 +91,7 @@
       assert error: g.logical_or!("example"
         g.const!("x", Tensor(Bool).from_array([True, True, False, False]))
         g.const!("y", Tensor(Bool).from_array([True, False, True, False])
-            .try_reshape([2, 2])
+            .try_reshape(Tensor.Shape.new([2, 2]))
         )
       )
     )

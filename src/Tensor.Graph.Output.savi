@@ -1,6 +1,7 @@
 :trait box Tensor.Graph.CanOutput
   :fun output Tensor.Graph.Output
   :fun name String
+  :fun shape Tensor.Shape: @output.shape
 
 :struct box Tensor.Graph.Output
   :let op Tensor.Graph.Operation
@@ -12,6 +13,29 @@
 
   :fun name: "\(@op.name).outputs[\(@index)]"
   :fun type: @_to_ffi.type
+
+  :fun shape
+    status_ptr = CPointer(_FFI.Status).null // TODO: is this okay?
+
+    rank = try (
+      _FFI.Output._get_rank(
+        @op.graph._ptr, @_to_ffi, status_ptr
+      ).usize!
+    |
+      return Tensor.Shape.unknown
+    )
+
+    shape = Array(I64).new(rank)
+    while (shape.size < rank) (shape << I64.zero)
+    // TODO: make the above process more efficient - use the
+    // `resize_possibly_including_uninitialized_memory` method on `Bytes`
+    // for inspiration, but generalize to `Array`.
+
+    _FFI.Output._get_shape(
+      @op.graph._ptr, @_to_ffi, shape.cpointer, rank.i32, status_ptr
+    )
+
+    Tensor.Shape.new(shape)
 
   :fun hash USize: @op._ptr.address.hash.bit_xor(@index.hash)
   :fun "=="(that @'box) Bool
@@ -41,3 +65,19 @@
   :fun type: @_get_type(@)
   :ffi _get_type(output @'box) I32
     :foreign_name TF_OperationOutputType
+
+  :ffi _get_rank(
+    graph CPointer(_FFI.Graph)
+    output @'box
+    status CPointer(_FFI.Status)
+  ) I32
+    :foreign_name TF_GraphGetTensorNumDims
+
+  :ffi _get_shape(
+    graph CPointer(_FFI.Graph)
+    output @'box
+    shape_buffer CPointer(I64)
+    rank I32
+    status CPointer(_FFI.Status)
+  ) None
+    :foreign_name TF_GraphGetTensorShape

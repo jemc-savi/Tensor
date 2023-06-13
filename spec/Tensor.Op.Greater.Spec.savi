@@ -46,6 +46,6 @@
     _WithGraphHelper.run(@env, False) -> (g, session |
       assert error: g.greater!("example"
         g.const!("x", Tensor(I32).from_array([0, 1, 2, 3]))
-        g.const!("y", Tensor(I32).from_array([3, 2, 1, 0]).try_reshape([2, 2]))
+        g.const!("y", Tensor(I32).from_array([3, 2, 1, 0]).try_reshape(Tensor.Shape.new([2, 2])))
       )
     )

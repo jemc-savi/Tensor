@@ -23,7 +23,7 @@
             1, 2, 3
             4, 5, 6
             7, 8, 9
-          ]).try_reshape([3, 3]))
+          ]).try_reshape(Tensor.Shape.new([3, 3])))
         )
       )
 

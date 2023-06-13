@@ -42,17 +42,17 @@
       )
       philox_key = g.reshape!("\(name).key.reshape"
         g.bitcast!("\(name).key.bitcast"
-          g.slice!("\(name).key.slice", philox_scrambled, [0], [2])
+          g.slice!("\(name).key.slice", philox_scrambled, [0], Tensor.Shape.new([2]))
           Tensor(U64)
         )
-        [1]
+        Tensor.Shape.new([1])
       )
       philox_base_counter = g.pack!("\(name).counter", [
         g.const!("\(name).counter.zero"
           Tensor(U64).scalar(0)
         )
         g.bitcast!("\(name).counter.bitcast"
-          g.slice!("\(name).counter.slice", philox_scrambled, [2], [2])
+          g.slice!("\(name).counter.slice", philox_scrambled, [2], Tensor.Shape.new([2]))
           Tensor(U64)
         )
       ])
