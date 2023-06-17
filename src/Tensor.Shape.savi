@@ -52,7 +52,9 @@
 
     out << "["
     array.each_with_index -> (dimension, i |
-      if (i > 0) (out << ", ")
+      if i > 0 (
+        out << ", "
+      )
       dimension.into_string(out)
     )
     out << "]"

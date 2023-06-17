@@ -28,7 +28,7 @@
     )
 
     shape = Array(I64).new(rank)
-    while (shape.size < rank) (shape << I64.zero)
+    while shape.size < rank shape << I64.zero
     // TODO: make the above process more efficient - use the
     // `resize_possibly_including_uninitialized_memory` method on `Bytes`
     // for inspiration, but generalize to `Array`.

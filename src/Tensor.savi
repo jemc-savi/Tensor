@@ -71,7 +71,7 @@
     // TODO: Do this without the intermediate array?
     elements Array(T) = []
     total_element_count.times -> (index |
-      elements << yield index
+      elements << (yield index)
     )
     @from_array(elements)
 
@@ -84,7 +84,7 @@
     shape.each -> (dimension |
       element_count = element_count * dimension.usize
     )
-    error! unless (element_count == @element_count)
+    error! unless element_count == @element_count
 
     @_ffi.set_shape(
       @_ptr
@@ -98,7 +98,9 @@
 
     size = @element_count.usize
     data.reserve(orig_size + size)
-    while (data.size < size) (data << T.zero)
+    while data.size < size (
+      data << T.zero
+    )
     // TODO: make the above process more efficient - use the
     // `resize_possibly_including_uninitialized_memory` method on `Bytes`
     // for inspiration, but generalize to `Array`.
