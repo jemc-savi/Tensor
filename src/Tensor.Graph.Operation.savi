@@ -53,7 +53,7 @@
   :fun ref add_input_list(can_outputs Array(Tensor.Graph.CanOutput)'box)
     return @ if @_ptr.is_null
     outputs = Array(_FFI.Output).new(can_outputs.size)
-    can_outputs.each -> (can_output | try (outputs << can_output.output._to_ffi!))
+    can_outputs.each -> (can_output | try outputs << can_output.output._to_ffi!)
     @_ffi.add_input_list(@_ptr, outputs.cpointer, outputs.size.i32)
     @
 
@@ -88,7 +88,7 @@
     return @ if @_ptr.is_null
 
     dimensions_i64_ptr =
-      if (USize.byte_width == I64.byte_width) (
+      if USize.byte_width == I64.byte_width (
         _FFI.Cast(CPointer(USize), CPointer(I64)).pointer(dimensions.cpointer)
       |
         dimensions_i64 Array(I64) = []

@@ -39,12 +39,12 @@
     y_ffis = Array(_FFI.Output).new(y_list.size)
     dy_ffis = Array(_FFI.Output).new(y_list.size)
     y_list.each -> (y |
-      try (y_ffis << y.output._to_ffi!)
+      try y_ffis << y.output._to_ffi!
       dy_ffis << _FFI.Output._new_temporarily_null
     )
 
     x_ffis = Array(_FFI.Output).new(x_list.size)
-    x_list.each -> (x | try (x_ffis << x.output._to_ffi!))
+    x_list.each -> (x | try x_ffis << x.output._to_ffi!)
 
     @_ffi.add_gradients(
       @_ptr

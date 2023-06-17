@@ -119,7 +119,7 @@
     g.add(name
       @_base_counter
       g.const("\(name).const"
-        if (@algorithm == Tensor.Gen.Random.Algorithm.Philox) (
+        if @algorithm == Tensor.Gen.Random.Algorithm.Philox (
           Tensor(U64).from_array([0, offset])
         |
           Tensor(U64).from_array([offset])
